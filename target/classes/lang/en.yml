@@ -1,0 +1,120 @@
+# ─────────────────────────────────────────────
+# ZCraft Studios Auth — English (en)
+# ─────────────────────────────────────────────
+
+# MiniMessage format supported in all messages
+# Placeholders: {player}, {time}, {ip}, {attempt}, {max}, etc.
+
+not-authenticated: "<red>You must log in first! Use <yellow>/login <password></yellow>."
+not-registered: "<red>You are not registered. Use <yellow>/register <password> <confirmPassword></yellow>."
+already-authenticated: "<green>You are already authenticated."
+already-registered: "<red>This username is already registered."
+
+login:
+  prompt: "<aqua>Please log in with <yellow>/login <password></yellow>."
+  success: "<green>✔ Successfully logged in. Welcome back, <yellow>{player}</yellow>!"
+  wrong-password: "<red>✗ Incorrect password. <gray>({attempt}/{max} attempts)</gray>"
+  timeout: "<red>⏱ Login timeout. You have been disconnected."
+  max-attempts: "<red>⛔ Too many failed attempts. Banned for {time} minutes."
+  cooldown: "<red>Please wait {time} seconds before trying again."
+
+register:
+  prompt: "<aqua>Create your account with <yellow>/register <password> <confirmPassword></yellow>."
+  success: "<green>✔ Account created! You are now logged in."
+  password-mismatch: "<red>✗ Passwords do not match."
+  password-too-short: "<red>✗ Password must be at least {min} characters."
+  password-too-long: "<red>✗ Password must be at most {max} characters."
+  password-unsafe: "<red>✗ That password is too common. Choose a stronger one."
+  invalid-username: "<red>✗ Your username contains invalid characters."
+
+logout:
+  success: "<yellow>✔ You have been logged out. See you soon!"
+  not-logged-in: "<red>You are not logged in."
+
+changepassword:
+  success: "<green>✔ Password changed successfully."
+  wrong-old: "<red>✗ Incorrect current password."
+  same-as-old: "<red>✗ New password cannot be the same as the old one."
+  prompt: "<aqua>Use <yellow>/changepassword <oldPassword> <newPassword></yellow>."
+
+email:
+  prompt-add: "<aqua>Add an email with <yellow>/email add <address></yellow>."
+  already-set: "<red>You already have an email set. Use /email change to update it."
+  added: "<green>✔ Email set! A verification code has been sent to <yellow>{email}</yellow>."
+  changed: "<green>✔ Email updated! A verification code has been sent to <yellow>{email}</yellow>."
+  verified: "<green>✔ Email address verified successfully."
+  invalid: "<red>✗ Invalid email address format."
+  verify-prompt: "<aqua>Enter the code sent to your email: <yellow>/email verify <code></yellow>."
+  code-sent: "<green>✔ Recovery code sent to your registered email."
+  recovery-success: "<green>✔ A temporary password has been sent to your email."
+  not-set: "<red>You have no email address set. Use /email add <address>."
+  rate-limited: "<red>Too many recovery attempts. Please wait before trying again."
+  token-expired: "<red>✗ The verification code has expired. Request a new one."
+  token-invalid: "<red>✗ Invalid verification code."
+
+two-factor:
+  enabled: "<green>✔ Two-factor authentication enabled!"
+  disabled: "<yellow>✔ Two-factor authentication disabled."
+  prompt: "<red>⚠ Enter your 2FA code: <yellow>/2fa verify <code></yellow>."
+  invalid-code: "<red>✗ Invalid 2FA code."
+  already-enabled: "<red>2FA is already enabled on your account."
+  not-enabled: "<red>2FA is not enabled on your account."
+  setup-info: "<aqua>Scan this QR code with your authenticator app, or enter the key manually:"
+  setup-key: "<yellow>Secret key: <white>{key}"
+  setup-qr: "<aqua>QR link: <white>{url}"
+
+session:
+  restored: "<green>✔ Session restored — welcome back, <yellow>{player}</yellow>!"
+
+premium:
+  auto-login: "<green>✔ Premium account detected — you have been logged in automatically."
+
+forcelogin:
+  success: "<green>✔ Force-logged in as <yellow>{player}</yellow>."
+  player-notified: "<yellow>⚠ You have been force-logged in by an administrator."
+  not-found: "<red>✗ Player not found."
+  not-registered: "<red>✗ {player} is not registered."
+  console-only: "<red>✗ This command can only be used from console or by admins."
+
+admin:
+  reload-success: "<green>✔ ZCraft Studios Auth reloaded."
+  backup-started: "<green>✔ Database backup started."
+  backup-success: "<green>✔ Backup saved to <yellow>{file}</yellow>."
+  import-started: "<green>✔ Import from {source} started. Check console for progress."
+  unregistered: "<green>✔ Account for <yellow>{player}</yellow> has been deleted."
+  restricted: "<green>✔ <yellow>{player}</yellow> is now restricted to IP <white>{ip}</white>."
+  unrestricted: "<green>✔ IP restriction removed from <yellow>{player}</yellow>."
+  no-permission: "<red>✗ You do not have permission for this."
+
+antibot:
+  kick: "<red>⚠ AntiBot protection is active. Please try again shortly."
+  activated: "<yellow>[AntiBot] Activated — high connection rate detected."
+  deactivated: "<green>[AntiBot] Deactivated."
+
+country:
+  blocked: "<red>Your country is not permitted on this server."
+
+spoofing:
+  blocked: "<red>⛔ Your username is similar to an existing account and has been blocked."
+
+restriction:
+  wrong-ip: "<red>⛔ Your account is locked to a specific IP. Contact an admin."
+
+error:
+  generic: "<red>An error occurred. Please try again."
+  database: "<red>A database error occurred. Please try again."
+  no-permission: "<red>You do not have permission to do this."
+  player-only: "<red>This command can only be used by players."
+  console-only: "<red>This command can only be used from console."
+  usage: "<red>Usage: {usage}"
+
+# Title / ActionBar prompts
+titles:
+  login-title: "<bold><red>NOT AUTHENTICATED"
+  login-subtitle: "<gray>Use <yellow>/login <password></yellow> to log in."
+  register-title: "<bold><aqua>WELCOME!"
+  register-subtitle: "<gray>Use <yellow>/register <password> <confirm></yellow>."
+
+bossbar:
+  login: "<red>⚠ Log in with /login <password>"
+  register: "<aqua>⚠ Register with /register <password> <confirm>"

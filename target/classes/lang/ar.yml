@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────
+# ZCraft Studios Auth — Arabic (ar)
+# ─────────────────────────────────────────────
+
+not-authenticated: "<red>يجب عليك تسجيل الدخول أولاً! استخدم <yellow>/login <كلمة_المرور></yellow>."
+not-registered: "<red>أنت غير مسجل. استخدم <yellow>/register <كلمة_المرور> <تأكيد></yellow>."
+already-authenticated: "<green>أنت مسجل الدخول بالفعل."
+already-registered: "<red>اسم المستخدم هذا مسجل بالفعل."
+
+login:
+  prompt: "<aqua>يرجى تسجيل الدخول باستخدام <yellow>/login <كلمة_المرور></yellow>."
+  success: "<green>✔ تم تسجيل الدخول بنجاح. مرحباً بعودتك، <yellow>{player}</yellow>!"
+  wrong-password: "<red>✗ كلمة مرور خاطئة. <gray>({attempt}/{max} محاولات)</gray>"
+  timeout: "<red>⏱ انتهت مهلة تسجيل الدخول. تم فصلك."
+  max-attempts: "<red>⛔ تجاوزت عدد المحاولات. محظور لمدة {time} دقيقة."
+  cooldown: "<red>يرجى الانتظار {time} ثانية قبل المحاولة مجدداً."
+
+register:
+  prompt: "<aqua>أنشئ حسابك باستخدام <yellow>/register <كلمة_المرور> <تأكيد></yellow>."
+  success: "<green>✔ تم إنشاء الحساب! تم تسجيل دخولك الآن."
+  password-mismatch: "<red>✗ كلمتا المرور غير متطابقتين."
+  password-too-short: "<red>✗ يجب أن تحتوي كلمة المرور على {min} أحرف على الأقل."
+  password-too-long: "<red>✗ يجب ألا تتجاوز كلمة المرور {max} حرفاً."
+  password-unsafe: "<red>✗ كلمة المرور هذه شائعة جداً. اختر كلمة أقوى."
+  invalid-username: "<red>✗ اسم المستخدم يحتوي على أحرف غير صالحة."
+
+logout:
+  success: "<yellow>✔ تم تسجيل خروجك. إلى اللقاء!"
+  not-logged-in: "<red>أنت لست مسجل الدخول."
+
+changepassword:
+  success: "<green>✔ تم تغيير كلمة المرور بنجاح."
+  wrong-old: "<red>✗ كلمة المرور الحالية غير صحيحة."
+  same-as-old: "<red>✗ لا يمكن أن تكون كلمة المرور الجديدة مطابقة للقديمة."
+  prompt: "<aqua>استخدم <yellow>/changepassword <القديمة> <الجديدة></yellow>."
+
+email:
+  prompt-add: "<aqua>أضف بريدك الإلكتروني باستخدام <yellow>/email add <البريد></yellow>."
+  already-set: "<red>لديك بريد إلكتروني بالفعل. استخدم /email change للتحديث."
+  added: "<green>✔ تم تعيين البريد الإلكتروني! تم إرسال رمز التحقق إلى <yellow>{email}</yellow>."
+  changed: "<green>✔ تم تحديث البريد الإلكتروني! تم إرسال رمز التحقق إلى <yellow>{email}</yellow>."
+  verified: "<green>✔ تم التحقق من البريد الإلكتروني بنجاح."
+  invalid: "<red>✗ صيغة البريد الإلكتروني غير صالحة."
+  verify-prompt: "<aqua>أدخل الرمز المرسل: <yellow>/email verify <الرمز></yellow>."
+  code-sent: "<green>✔ تم إرسال رمز الاسترداد إلى بريدك الإلكتروني."
+  recovery-success: "<green>✔ تم إرسال كلمة مرور مؤقتة إلى بريدك الإلكتروني."
+  not-set: "<red>ليس لديك بريد إلكتروني. استخدم /email add <البريد>."
+  rate-limited: "<red>عدد كبير من محاولات الاسترداد. يرجى الانتظار."
+  token-expired: "<red>✗ انتهت صلاحية رمز التحقق. اطلب رمزاً جديداً."
+  token-invalid: "<red>✗ رمز التحقق غير صالح."
+
+two-factor:
+  enabled: "<green>✔ تم تفعيل المصادقة الثنائية!"
+  disabled: "<yellow>✔ تم تعطيل المصادقة الثنائية."
+  prompt: "<red>⚠ أدخل رمز المصادقة: <yellow>/2fa verify <الرمز></yellow>."
+  invalid-code: "<red>✗ رمز المصادقة غير صالح."
+  already-enabled: "<red>المصادقة الثنائية مفعلة بالفعل."
+  not-enabled: "<red>المصادقة الثنائية غير مفعلة."
+  setup-info: "<aqua>امسح رمز QR بتطبيق المصادقة أو أدخل المفتاح يدوياً:"
+  setup-key: "<yellow>المفتاح السري: <white>{key}"
+  setup-qr: "<aqua>رابط QR: <white>{url}"
+
+session:
+  restored: "<green>✔ تم استئناف الجلسة — مرحباً بعودتك، <yellow>{player}</yellow>!"
+
+premium:
+  auto-login: "<green>✔ تم التحقق من حسابك المميز — تم تسجيل دخولك تلقائياً."
+
+forcelogin:
+  success: "<green>✔ تم تسجيل الدخول بالقوة كـ <yellow>{player}</yellow>."
+  player-notified: "<yellow>⚠ قام المدير بتسجيل دخولك."
+  not-found: "<red>✗ اللاعب غير موجود."
+  not-registered: "<red>✗ {player} غير مسجل."
+  console-only: "<red>✗ يمكن استخدام هذا الأمر فقط من وحدة التحكم أو من قبل المديرين."
+
+admin:
+  reload-success: "<green>✔ تم إعادة تحميل ZCraft Studios Auth."
+  backup-started: "<green>✔ بدأ النسخ الاحتياطي."
+  backup-success: "<green>✔ تم حفظ النسخة الاحتياطية في <yellow>{file}</yellow>."
+  import-started: "<green>✔ بدأ الاستيراد من {source}. تحقق من السجل للتفاصيل."
+  unregistered: "<green>✔ تم حذف حساب <yellow>{player}</yellow>."
+  restricted: "<green>✔ تم تقييد <yellow>{player}</yellow> بعنوان IP <white>{ip}</white>."
+  unrestricted: "<green>✔ تم إزالة تقييد IP من <yellow>{player}</yellow>."
+  no-permission: "<red>✗ ليس لديك صلاحية للقيام بهذا."
+
+antibot:
+  kick: "<red>⚠ نظام مكافحة الروبوت نشط. يرجى المحاولة لاحقاً."
+  activated: "<yellow>[AntiBot] تم التفعيل — معدل اتصال مرتفع."
+  deactivated: "<green>[AntiBot] تم إيقاف التفعيل."
+
+country:
+  blocked: "<red>دولتك غير مسموح لها بالوصول إلى هذا الخادم."
+
+spoofing:
+  blocked: "<red>⛔ اسم مستخدمك مشابه لحساب موجود وتم حظره."
+
+restriction:
+  wrong-ip: "<red>⛔ حسابك مقيد بعنوان IP محدد. تواصل مع المسؤول."
+
+error:
+  generic: "<red>حدث خطأ. يرجى المحاولة مجدداً."
+  database: "<red>حدث خطأ في قاعدة البيانات."
+  no-permission: "<red>ليس لديك صلاحية."
+  player-only: "<red>هذا الأمر للاعبين فقط."
+  console-only: "<red>هذا الأمر لوحدة التحكم فقط."
+  usage: "<red>الاستخدام: {usage}"
+
+titles:
+  login-title: "<bold><red>غير مصادق"
+  login-subtitle: "<gray>استخدم <yellow>/login <كلمة_المرور></yellow>."
+  register-title: "<bold><aqua>مرحباً!"
+  register-subtitle: "<gray>استخدم <yellow>/register <كلمة_المرور> <تأكيد></yellow>."
+
+bossbar:
+  login: "<red>⚠ سجّل دخولك بـ /login"
+  register: "<aqua>⚠ سجّل حسابك بـ /register"

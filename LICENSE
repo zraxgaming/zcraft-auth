@@ -1,0 +1,38 @@
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC-BY-NC-SA 4.0)
+
+Copyright (c) 2026 ZCraft Studios - https://studio.z-craft.xyz
+
+TERMS AND CONDITIONS:
+
+1. You are free to:
+   - Share: Copy and redistribute the material in any medium or format
+   - Adapt: Remix, transform, and build upon the material
+
+2. Under the following terms:
+   - Attribution: You MUST give appropriate credit to ZCraft Studios and include
+     a link to the original repository (https://github.com/zraxgaming/ffa-plugin).
+     You must indicate if changes were made to the original work.
+   - NonCommercial: You may not use this material for commercial purposes.
+   - ShareAlike: If you modify or build upon this material, you must distribute
+     your contributions under the same license as the original.
+
+3. Attribution Requirements:
+   - In your source code, you must include:
+     "Based on Z-FFA Core by ZCraft Studios (https://github.com/zraxgaming/ffa-plugin)"
+   - In any redistributed plugin.yml:
+     Include "Original Author: ZCraft Studios" in the description
+   - For forks: Clearly indicate in your README that it is a fork/modification
+     with a link to the original repository
+   - In any modified versions, maintain this license file and mark modifications clearly
+
+4. Additional Terms:
+   - If you fork this project, you must:
+     * Clearly mark all modifications you make
+     * Credit the original author prominently
+     * Not remove or hide the original author attribution
+   - Your modifications must not misrepresent the original work as your own
+   - You must ensure users know the original source
+
+For full legal text, see:
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode

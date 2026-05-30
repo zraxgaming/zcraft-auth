@@ -1,0 +1,445 @@
+# ╔════════════════════════════════════════════╗
+# ║            Auth — config.yml               ║
+# ╚════════════════════════════════════════════╝
+
+# ─────────────────────────────────────────────
+# GENERAL SETTINGS
+# ─────────────────────────────────────────────
+general:
+  # Default language used when player's locale is unavailable
+  # Available: en, ar, de, fr, es, pt, ru, zh, tr, pl
+  default-language: en
+
+  # Plugin prefix shown in messages (supports MiniMessage)
+  prefix: "<dark_gray>[<gradient:#00B4FF:#0077FF>Auth</gradient>]</dark_gray> "
+
+  # Login/register timeout in seconds before kick
+  login-timeout: 30
+  register-timeout: 60
+
+  # Max login attempts before kick / temp-ban
+  max-login-attempts: 5
+  # Temp-ban duration after max attempts (minutes, 0 = disabled)
+  attempt-ban-duration: 10
+
+  # Blind spawn coordinates (teleport here while not authenticated)
+  # Set to null to use default spawn
+  limbo-spawn:
+    enabled: true
+    world: world
+    x: 0.0
+    y: 64.0
+    z: 0.0
+    yaw: 0.0
+    pitch: 0.0
+
+  # Teleport to last location after login
+  teleport-to-last-location: true
+
+  # Hide player from tab list until authenticated
+  hide-in-tablist: true
+
+  # Invisible until authenticated
+  invisible-before-auth: true
+
+  # Prevent commands before authentication (whitelist)
+  blocked-commands:
+    - "/"  # blocks all commands; add exceptions below
+
+  allowed-commands-before-auth:
+    - "/login"
+    - "/register"
+    - "/l"
+    - "/reg"
+    - "/2fa"
+    - "/help"
+
+  # Allow players to chat before authenticating
+  allow-chat-before-auth: false
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# FEATURE TOGGLES
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+features:
+  # Player commands
+  login-command: true
+  register-command: true
+  logout-command: true
+  changepass-command: true
+  email-command: true
+  two-factor-command: true
+  force-login-command: true
+  admin-command: true
+
+  # Core modules
+  session-restore: true
+  premium-auto-login: true
+  antibot: true
+  country-restrictions: true
+  spoofing-protection: true
+  inventory-protection: true
+  backups: true
+  discord-logging: false
+  cache: true
+  legacy-hash-migration: true
+  gui-prompts: true
+
+# ─────────────────────────────────────────────
+# DATABASE
+# ─────────────────────────────────────────────
+database:
+  # Type: sqlite | mysql | mariadb | postgresql
+  type: sqlite
+
+  # SQLite (used when type: sqlite)
+  sqlite:
+    file: auth.db
+
+  # MySQL / MariaDB
+  mysql:
+    host: localhost
+    port: 3306
+    database: zcraft_auth
+    username: root
+    password: ""
+    ssl: false
+    # Custom table name (for forum database integration)
+    table: zcraft_accounts
+    # Custom column names (for migration from other systems)
+    columns:
+      uuid: uuid
+      username: username
+      password: password
+      email: email
+      ip: last_ip
+      last_login: last_login
+      registered_at: registered_at
+      two_factor_secret: totp_secret
+      session_token: session_token
+      session_expiry: session_expiry
+      is_premium: is_premium
+      country_code: country_code
+      is_restricted: is_restricted
+      restricted_ip: restricted_ip
+    # Connection pool
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # PostgreSQL
+  postgresql:
+    host: localhost
+    port: 5432
+    database: zcraft_auth
+    username: postgres
+    password: ""
+    ssl: false
+    table: zcraft_accounts
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Cache database queries in memory for performance
+  cache-enabled: true
+  cache-expiry: 300  # seconds
+
+  # Automatic backup
+  backup:
+    enabled: true
+    # Interval in minutes
+    interval: 60
+    # Number of backups to keep
+    keep: 10
+    # Backup directory (relative to plugin folder)
+    directory: backups
+
+# ─────────────────────────────────────────────
+# PREMIUM / CRACKED SETTINGS
+# ─────────────────────────────────────────────
+premium:
+  # Enable premium auto-login (Mojang-verified accounts skip password auth)
+  enabled: true
+
+  # Cache premium check results (seconds)
+  cache-duration: 3600
+
+  # Timeout for Mojang API call (ms)
+  check-timeout: 5000
+
+  # If Mojang API is down, treat player as:
+  # cracked | premium | kick
+  api-down-behavior: cracked
+
+  # Require PacketEvents for proper premium session bypass
+  require-packetevents: false
+
+# ─────────────────────────────────────────────
+# PASSWORD SETTINGS
+# ─────────────────────────────────────────────
+password:
+  # Hashing algorithm: SHA256 | BCRYPT | ARGON2 | PBKDF2 | PBKDF2BASE64
+  algorithm: BCRYPT
+
+  # Minimum / maximum password length
+  min-length: 5
+  max-length: 64
+
+  # Unsafe passwords that are blocked
+  unsafe-passwords:
+    - "password"
+    - "123456"
+    - "qwerty"
+    - "minecraft"
+    - "password123"
+
+  # BCrypt cost factor (10-12 recommended)
+  bcrypt-cost: 12
+
+  # Argon2 settings
+  argon2:
+    type: ARGON2id  # ARGON2i | ARGON2d | ARGON2id
+    iterations: 3
+    memory: 65536
+    parallelism: 1
+
+  # PBKDF2 settings
+  pbkdf2:
+    iterations: 100000
+    key-length: 256
+
+  # Legacy hash migration: when player logs in with old hash format,
+  # automatically rehash with current algorithm
+  # Supported legacy: XFBCRYPT | MYBB | PHPBB | JOOMLA | WORDPRESS | WBB3 | WBB4 | IPB3
+  legacy-migration:
+    enabled: true
+    auto-rehash: true
+
+# ─────────────────────────────────────────────
+# SESSION SETTINGS
+# ─────────────────────────────────────────────
+session:
+  # Remember session by IP address to skip re-login on reconnect
+  enabled: true
+  # Session duration in seconds (0 = unlimited)
+  duration: 86400  # 24 hours
+  # Max distance from session IP prefix to accept (0 = exact match)
+  # e.g., 1 = allow same /24 subnet
+  ip-tolerance: 0
+  # Prevent "Logged in from another location" — seamlessly update session
+  prevent-location-kick: true
+
+# ─────────────────────────────────────────────
+# TWO-FACTOR AUTHENTICATION
+# ─────────────────────────────────────────────
+two-factor:
+  enabled: true
+  # Force 2FA for players with permission zcraftauth.require2fa
+  force-for-staff: false
+  # TOTP window (number of 30s windows to accept before/after)
+  window: 1
+  # QR code generation URL base
+  issuer: "Server"
+
+# ─────────────────────────────────────────────
+# EMAIL SETTINGS
+# ─────────────────────────────────────────────
+email:
+  enabled: true
+  # Require email confirmation before account recovery is available
+  require-confirmation: true
+  # Token expiry (minutes)
+  token-expiry: 30
+  # Max recovery emails per hour per IP
+  rate-limit: 3
+
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    ssl: false
+    starttls: true
+    username: "your@email.com"
+    password: "your-app-password"
+    from-address: "noreply@z-craft.xyz"
+    from-name: "Server"
+
+  # Email templates use MiniMessage for subject, plain text for body
+  templates:
+    verification:
+      subject: "Verify your email address"
+      body: |
+        Hello {player},
+
+        Click the link or use the code below to verify your email:
+        Code: {code}
+        Expires in: {expiry} minutes
+
+        Auth
+    recovery:
+      subject: "Account Password Reset"
+      body: |
+        Hello {player},
+
+        Your temporary password is: {code}
+        Please log in and change it immediately.
+        This code expires in {expiry} minutes.
+
+        Auth
+
+# ─────────────────────────────────────────────
+# ANTIBOT SETTINGS
+# ─────────────────────────────────────────────
+antibot:
+  enabled: true
+  # Max joins per second before antibot activates
+  max-joins-per-second: 5
+  # Max connections from same IP simultaneously
+  max-per-ip: 3
+  # Duration antibot stays active after trigger (seconds)
+  active-duration: 300
+  # Kick message when antibot is active (MiniMessage)
+  kick-message: "<red>⚠ AntiBot protection active. Try again in a moment."
+  # Whitelist IPs from antibot (e.g., internal proxies)
+  whitelisted-ips:
+    - "127.0.0.1"
+
+# ─────────────────────────────────────────────
+# COUNTRY RESTRICTIONS
+# ─────────────────────────────────────────────
+country:
+  enabled: false
+  # Mode: whitelist | blacklist
+  mode: blacklist
+  # ISO 3166-1 alpha-2 country codes
+  codes:
+    - "CN"
+    - "RU"
+  # Kick message for blocked countries (MiniMessage)
+  kick-message: "<red>Your country is not allowed on this server."
+  # GeoIP provider: ip-api | maxmind
+  provider: ip-api
+  # MaxMind GeoLite2-Country.mmdb path (relative to plugin folder)
+  maxmind-db: GeoLite2-Country.mmdb
+  # Cache GeoIP results (seconds)
+  cache-duration: 3600
+
+# ─────────────────────────────────────────────
+# USERNAME SPOOFING PROTECTION
+# ─────────────────────────────────────────────
+spoofing-protection:
+  enabled: true
+  # Prevent uppercase variants and lookalike characters
+  case-insensitive-check: true
+  # Allowed character pattern (regex)
+  username-regex: "^[a-zA-Z0-9_]{3,16}$"
+  # Block known confusable pairs (e.g. 0/O, l/1)
+  confusable-check: true
+
+# ─────────────────────────────────────────────
+# INVENTORY PROTECTION
+# ─────────────────────────────────────────────
+inventory-protection:
+  # Requires PacketEvents for full packet-level protection
+  enabled: true
+  # Drop items thrown before login (returns to player on auth)
+  protect-item-drops: true
+  # Return ender pearls thrown before auth
+  return-ender-pearls: true
+
+# ─────────────────────────────────────────────
+# RESTRICTED ACCOUNTS (IP-LOCKED)
+# ─────────────────────────────────────────────
+restrictions:
+  enabled: true
+  # Message sent to restricted player on non-whitelisted IP
+  wrong-ip-message: "<red>Your account is locked to a specific IP address."
+
+# ─────────────────────────────────────────────
+# GUI / DIALOGS
+# ─────────────────────────────────────────────
+gui:
+  # Show graphical login prompt using Paper's pre-join dialog (Paper/Folia)
+  pre-join-dialog: true
+  # Fallback: show boss bar prompt on join
+  bossbar-prompt: true
+  bossbar-color: BLUE
+  # Show action bar hint
+  actionbar-hint: true
+  # Show title prompt
+  title-prompt: true
+
+# ─────────────────────────────────────────────
+# COMPATIBILITY
+# ─────────────────────────────────────────────
+compatibility:
+  # Citizens2 NPCs are excluded from auth requirements
+  citizens-support: true
+  # CombatTag: prevent logout during combat
+  combattag-support: true
+  # Floodgate / Geyser: auto-login Bedrock players
+  floodgate-support: false
+
+# ─────────────────────────────────────────────
+# ACCOUNT IMPORT
+# ─────────────────────────────────────────────
+import:
+  # Source: authplus | librelogin | limboauth | nlogin | openlogin | tiauth
+  source: authplus
+  # Path to the import source's database or file
+  path: plugins/AuthMe/players.db
+
+# ─────────────────────────────────────────────
+# DISCORD WEBHOOK LOGGING
+# ─────────────────────────────────────────────
+discord:
+  # Master toggle — set to true to enable all Discord logging
+  enabled: false
+
+  # Your server's display name used in Discord embed footers
+  server-name: "Server"
+
+  # ── Main webhook (fallback for all categories) ──
+  # If a category-specific webhook below is blank, this URL is used instead.
+  # Paste your Discord webhook URL here:
+  webhook-url: ""
+
+  # ── Per-category webhook URLs ──
+  # Leave blank ("") to fall back to webhook-url above.
+  # Set to a different URL to route events to separate Discord channels.
+  webhooks:
+    login:    ""   # Successful logins (normal, session, premium, force)
+    register: ""   # New account registrations
+    logout:   ""   # Player logouts / disconnects
+    failed:   ""   # Failed login attempts
+    admin:    ""   # Admin actions (forcelogin, restrict, unregister, reload…)
+    security: ""   # Security alerts (antibot, country block, spoofing, 2FA fail)
+
+  # ── Event toggles ──
+  # Individually enable or disable each event category
+  events:
+    login:    true
+    register: true
+    logout:   false   # High volume — off by default
+    failed:   true
+    admin:    true
+    security: true
+
+# ─────────────────────────────────────────────
+# EXAMPLE: Multiple channel setup
+# ─────────────────────────────────────────────
+# discord:
+#   enabled: true
+#   server-name: "Server"
+#   webhook-url: ""
+#   webhooks:
+#     login:    "https://discord.com/api/webhooks/CHANNEL_ID/TOKEN"
+#     register: "https://discord.com/api/webhooks/CHANNEL_ID/TOKEN"
+#     logout:   ""
+#     failed:   "https://discord.com/api/webhooks/CHANNEL_ID/TOKEN"
+#     admin:    "https://discord.com/api/webhooks/CHANNEL_ID/TOKEN"
+#     security: "https://discord.com/api/webhooks/CHANNEL_ID/TOKEN"

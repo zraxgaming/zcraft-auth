@@ -1,0 +1,80 @@
+name: ZCraftAuth
+version: '1.0.0'
+main: xyz.zcraft.studio.auth.ZCraftAuth
+api-version: '1.21'
+description: Premium authentication plugin by ZCraft Studios — studio.z-craft.xyz
+authors: [ZCraftStudios]
+website: https://studio.z-craft.xyz
+softdepend: [PacketEvents, Citizens, CombatTag, CombatTagPlus]
+
+commands:
+  login:
+    description: Authenticate with your password
+    usage: /login <password>
+    aliases: [l, log]
+  register:
+    description: Create a new account
+    usage: /register <password> <confirmPassword>
+    aliases: [reg]
+  logout:
+    description: Log out of your account
+    usage: /logout
+    aliases: [lo]
+  changepassword:
+    description: Change your account password
+    usage: /changepassword <oldPassword> <newPassword>
+    aliases: [cp, changepw, passwd]
+  email:
+    description: Manage your email address
+    usage: /email <add|change|verify|recover> [args]
+    aliases: [mail]
+  2fa:
+    description: Manage two-factor authentication
+    usage: /2fa <enable|disable|verify> [code]
+    aliases: [totp, authenticator]
+  forcelogin:
+    description: Force-login a player (console/admin only)
+    usage: /forcelogin <player>
+    aliases: [flogin, adminlogin]
+  zcraftauth:
+    description: ZCraft Studios Auth admin command
+    usage: /zcraftauth <reload|import|backup|accounts|restrict|unrestrict|unregister>
+    aliases: [zauth, authadmin]
+
+permissions:
+  zcraftauth.login:
+    description: Allows the player to use /login
+    default: true
+  zcraftauth.register:
+    description: Allows the player to use /register
+    default: true
+  zcraftauth.logout:
+    description: Allows the player to use /logout
+    default: true
+  zcraftauth.changepassword:
+    description: Allows the player to use /changepassword
+    default: true
+  zcraftauth.email:
+    description: Allows the player to use /email
+    default: true
+  zcraftauth.2fa:
+    description: Allows the player to use /2fa
+    default: true
+  zcraftauth.forcelogin:
+    description: Allows use of /forcelogin
+    default: op
+  zcraftauth.admin:
+    description: Full admin access to ZCraftAuth
+    default: op
+  zcraftauth.bypass.antibot:
+    description: Bypass antibot restrictions
+    default: op
+  zcraftauth.bypass.country:
+    description: Bypass country restrictions
+    default: op
+  zcraftauth.bypass.iplock:
+    description: Bypass IP-locked account restrictions
+    default: op
+  zcraftauth.premium.bypass:
+    description: Auto-login as premium without PacketEvents
+    default: false
