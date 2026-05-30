@@ -87,6 +87,8 @@ public final class ZCraftAuth extends JavaPlugin {
 
         getServer().getOnlinePlayers().forEach(p -> authManager.evaluateOnJoin(p));
 
+        printStartupSummary();
+
         discordLogger.logInfo(
                 "Auth Enabled",
                 "Version **" + getDescription().getVersion() + "** loaded on Paper 1.21.x\n"
@@ -161,10 +163,28 @@ public final class ZCraftAuth extends JavaPlugin {
     }
 
     private void printBanner() {
-        getLogger().info("+--------------------------------------------+");
-        getLogger().info("|  Auth v" + getDescription().getVersion());
-        getLogger().info("|  Paper 1.21.1+ and 1.21.x                  |");
-        getLogger().info("+--------------------------------------------+");
+        getLogger().info("==============================================");
+        getLogger().info(" Auth v" + getDescription().getVersion());
+        getLogger().info(" Paper 1.21.1+ and 1.21.x");
+        getLogger().info("==============================================");
+    }
+
+    private void printStartupSummary() {
+        getLogger().info("[Startup] Database  : " + database.getProviderType());
+        getLogger().info("[Startup] Commands  : login, register, logout, changepass, email, 2fa, forcelogin, zauth");
+        getLogger().info("[Startup] Modules   : "
+                + enabledLabel("session", configManager.isSessionEnabled()) + ", "
+                + enabledLabel("premium", configManager.isPremiumEnabled()) + ", "
+                + enabledLabel("antibot", configManager.isAntiBotEnabled()) + ", "
+                + enabledLabel("country", configManager.isCountryEnabled()) + ", "
+                + enabledLabel("spoofing", configManager.isSpoofingProtectionEnabled()) + ", "
+                + enabledLabel("inventory", configManager.isInventoryProtectionEnabled()) + ", "
+                + enabledLabel("backups", configManager.isBackupEnabled()));
+        getLogger().info("[Startup] Discord   : " + (configManager.isDiscordLoggingEnabled() ? "enabled" : "disabled"));
+    }
+
+    private String enabledLabel(String name, boolean enabled) {
+        return name + "=" + (enabled ? "on" : "off");
     }
 
     private void migrateLegacyDataFolder() {

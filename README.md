@@ -1,10 +1,10 @@
 # Auth
 
-[![Build](https://img.shields.io/github/actions/workflow/status/zraxgaming/ffa-plugin/build.yml?branch=main&label=build)](https://github.com/zraxgaming/ffa-plugin/actions)
-[![Release](https://img.shields.io/github/v/release/zraxgaming/ffa-plugin?label=release)](https://github.com/zraxgaming/ffa-plugin/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/zraxgaming/zcraft-auth/build.yml?branch=main&label=build)](https://github.com/zraxgaming/zcraft-auth/actions)
+[![Release](https://img.shields.io/github/v/release/zraxgaming/zcraft-auth?label=release)](https://github.com/zraxgaming/zcraft-auth/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Paper%2FPurpur%201.21.x-2ea44f)](https://papermc.io/)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00)](https://adoptium.net/)
-[![License](https://img.shields.io/github/license/zraxgaming/ffa-plugin)](LICENSE)
+[![License](https://img.shields.io/github/license/zraxgaming/zcraft-auth)](LICENSE)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue?logo=paypal)](https://paypal.me/reemanabusal)
 
 Professional Minecraft authentication plugin for Paper 1.21.1+ and the wider 1.21.x line.
@@ -48,17 +48,17 @@ Originally built as a private ZCraft Studios network plugin, now documented for 
 
 ### Build Status
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/zraxgaming/ffa-plugin/build.yml?branch=main&style=for-the-badge)](https://github.com/zraxgaming/ffa-plugin/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/zraxgaming/zcraft-auth/build.yml?branch=main&style=for-the-badge)](https://github.com/zraxgaming/zcraft-auth/actions)
 
 ### Release
 
-[![Latest Release](https://img.shields.io/github/v/release/zraxgaming/ffa-plugin?style=for-the-badge)](https://github.com/zraxgaming/ffa-plugin/releases)
+[![Latest Release](https://img.shields.io/github/v/release/zraxgaming/zcraft-auth?style=for-the-badge)](https://github.com/zraxgaming/zcraft-auth/releases)
 
 ### Supported Versions
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-Paper%2FPurpur%201.21.x-2ea44f?style=for-the-badge)](https://papermc.io/)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge)](https://adoptium.net/)
-[![License](https://img.shields.io/github/license/zraxgaming/ffa-plugin?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/github/license/zraxgaming/zcraft-auth?style=for-the-badge)](LICENSE)
 
 ## Commands
 

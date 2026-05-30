@@ -2,6 +2,7 @@ package xyz.zcraft.studio.auth.api;
 
 import org.bukkit.entity.Player;
 import xyz.zcraft.studio.auth.ZCraftAuth;
+import xyz.zcraft.studio.auth.api.PlayerAuthEvent.AuthMethod;
 import xyz.zcraft.studio.auth.database.PlayerData;
 
 import java.util.Optional;
@@ -97,7 +98,11 @@ public final class ZCraftAuthAPI {
         plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
             if (opt.isPresent()) {
                 plugin.getServer().getScheduler().runTask(plugin, () ->
-                        plugin.getAuthManager().completeLogin(player, opt.get(), false));
+                        plugin.getAuthManager().completeLogin(
+                                player,
+                                opt.get(),
+                                AuthMethod.FORCE
+                        ));
             }
         });
     }

@@ -41,7 +41,7 @@ public class AccountImporter {
             case "librelogin"           -> importLibreLogin(path);
             case "limboauth"            -> importLimboAuth(path);
             case "nlogin"               -> importNLogin(path);
-            case "openlogin", "openlogin" -> importOpenLogin(path);
+            case "openlogin" -> importOpenLogin(path);
             case "tiauth"               -> importTiAuth(path);
             default -> {
                 plugin.getLogger().warning("Unknown import source: " + source);
