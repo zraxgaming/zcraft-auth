@@ -11,7 +11,7 @@ TERMS AND CONDITIONS:
 
 2. Under the following terms:
    - Attribution: You MUST give appropriate credit to ZCraft Studios and include
-     a link to the original repository (https://github.com/zraxgaming/ffa-plugin).
+     a link to the original repository (https://github.com/zraxgaming/zcraft-auth).
      You must indicate if changes were made to the original work.
    - NonCommercial: You may not use this material for commercial purposes.
    - ShareAlike: If you modify or build upon this material, you must distribute
@@ -19,7 +19,7 @@ TERMS AND CONDITIONS:
 
 3. Attribution Requirements:
    - In your source code, you must include:
-     "Based on Z-FFA Core by ZCraft Studios (https://github.com/zraxgaming/ffa-plugin)"
+     "Based on Z-FFA Core by ZCraft Studios (https://github.com/zraxgaming/zcraft-auth)"
    - In any redistributed plugin.yml:
      Include "Original Author: ZCraft Studios" in the description
    - For forks: Clearly indicate in your README that it is a fork/modification
