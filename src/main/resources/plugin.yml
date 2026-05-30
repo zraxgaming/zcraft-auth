@@ -2,7 +2,7 @@ name: Auth
 version: '1.0.0'
 main: xyz.zcraft.studio.auth.ZCraftAuth
 api-version: '1.21'
-description: Minecraft authentication plugin. Original Author: ZCraft Studios.
+description: "Minecraft authentication plugin. Original Author: ZCraft Studios."
 softdepend: [PacketEvents, Citizens, CombatTag, CombatTagPlus]
 
 commands:
