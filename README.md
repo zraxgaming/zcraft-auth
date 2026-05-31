@@ -17,6 +17,7 @@ GitHub Actions builds two jars:
   - Put this on every backend Paper/Purpur server.
   - No database and no heavy auth logic.
   - Blocks players until the proxy confirms they are logged in.
+  - Runs bStats from the backend server, because bStats was registered for Bukkit/Paper.
 
 ## Install
 
@@ -65,6 +66,7 @@ Set `login-timeout` or `register-timeout` to `0` to disable timeout kicks. Set `
 - Backend servers should be Paper or Purpur 1.21.x.
 - Velocity and Bungee are supported by the same proxy jar.
 - Same-IP player limits are disabled by default.
+- More setup notes: [docs/setup.md](docs/setup.md).
 
 ## License
 

@@ -1,5 +1,6 @@
 package xyz.zcraft.studio.auth.backend;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,6 +36,7 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getMessenger().registerIncomingPluginChannel(this, CHANNEL, this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, CHANNEL);
+        new Metrics(this, 31668);
         getLogger().info("Backend auth guard enabled.");
     }
 
