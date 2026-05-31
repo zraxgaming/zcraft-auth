@@ -141,11 +141,11 @@ public class AuthListener implements Listener {
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         if (isNPC(player) || plugin.getAuthManager().isAuthenticated(player)) {
-            if (!plugin.getConfigManager().isAllowChatBeforeAuth() &&
-                    !plugin.getAuthManager().isAuthenticated(player)) {
-                event.setCancelled(true);
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "not-authenticated")));
-            }
+            return;
+        }
+        if (!plugin.getConfigManager().isAllowChatBeforeAuth()) {
+            event.setCancelled(true);
+            player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "not-authenticated")));
         }
     }
 

@@ -425,9 +425,13 @@ public class AuthManager {
     private void startTimeout(Player player, boolean isLogin) {
         int seconds = isLogin ? plugin.getConfigManager().getLoginTimeout()
                 : plugin.getConfigManager().getRegisterTimeout();
+        if (seconds <= 0) {
+            return;
+        }
         int taskId = new BukkitRunnable() {
             @Override
             public void run() {
+                timeoutTasks.remove(player.getUniqueId());
                 if (player.isOnline() && !isAuthenticated(player)) {
                     player.kick(MM.deserialize(
                             plugin.getLanguageManager().get(player, "login.timeout")));

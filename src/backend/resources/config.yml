@@ -1,0 +1,7 @@
+block-movement: true
+allow-chat: false
+allowed-commands:
+  - "/login"
+  - "/register"
+  - "/l"
+  - "/reg"

@@ -1,0 +1,10 @@
+{
+  "id": "zcraftauth",
+  "name": "Auth",
+  "version": "1.0.0",
+  "main": "xyz.zcraft.studio.auth.proxy.velocity.VelocityAuthPlugin",
+  "description": "Proxy-side authentication for Velocity.",
+  "authors": [
+    "ZCraft Studios"
+  ]
+}

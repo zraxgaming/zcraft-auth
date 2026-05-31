@@ -64,8 +64,13 @@ public class AntiBotManager {
         }
 
         // Per-IP check
+        int maxPerIp = plugin.getConfigManager().getMaxPerIP();
+        if (maxPerIp <= 0) {
+            return false;
+        }
+
         AtomicInteger ipCount = ipCounts.computeIfAbsent(ip, k -> new AtomicInteger(0));
-        if (ipCount.get() >= plugin.getConfigManager().getMaxPerIP()) {
+        if (ipCount.get() >= maxPerIp) {
             plugin.getDiscordLogger().logSecurityAlert(
                 event.getPlayer().getName(), ip,
                 "Per-IP connection limit exceeded (" + ipCount.get() + " connections)");

@@ -1,140 +1,71 @@
 # Auth
 
 [![Build](https://img.shields.io/github/actions/workflow/status/zraxgaming/zcraft-auth/build.yml?branch=main&label=build)](https://github.com/zraxgaming/zcraft-auth/actions)
-[![Release](https://img.shields.io/github/v/release/zraxgaming/zcraft-auth?label=release)](https://github.com/zraxgaming/zcraft-auth/releases)
-[![Minecraft](https://img.shields.io/badge/Minecraft-Paper%2FPurpur%201.21.x-2ea44f)](https://papermc.io/)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00)](https://adoptium.net/)
 [![License](https://img.shields.io/github/license/zraxgaming/zcraft-auth)](LICENSE)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue?logo=paypal)](https://paypal.me/reemanabusal)
 
-Professional Minecraft authentication plugin for Paper 1.21.1+ and the wider 1.21.x line.
+Proxy-first Minecraft authentication for Velocity/Bungee networks, with a tiny Paper/Purpur backend guard.
 
-Originally built as a private ZCraft Studios network plugin, now documented for cleaner setup, easier config editing, and smoother server operations.
+## Builds
 
-## Highlights
+GitHub Actions builds two jars:
 
-- Password login, register, logout, and password change
-- Email verification and recovery
-- TOTP 2FA support
-- Session restore and premium auto-login
-- Anti-bot protection
-- GeoIP country restrictions
-- Username spoofing protection
-- Inventory protection while unauthenticated
-- SQLite, MySQL, MariaDB, and PostgreSQL support
-- Manual and automatic backups
-- Account import tools
-- Public API and custom events
-- MiniMessage support in config and language files
-- Feature toggles for major modules and commands
-
-## Quick Links
-
-- [License](LICENSE)
-- [Build Workflow](.github/workflows/build.yml)
-- [Main Plugin](src/main/java/xyz/zcraft/studio/auth/ZCraftAuth.java)
-- [Commands](src/main/java/xyz/zcraft/studio/auth/commands)
-- [Language Files](src/main/resources/lang)
-- [Donate via PayPal](https://paypal.me/reemanabusal)
+- `Auth-Proxy-<version>.jar`
+  - Put this on Velocity or BungeeCord.
+  - Owns `/login`, `/register`, passwords, auth state, and the database.
+- `Auth-Backend-<version>.jar`
+  - Put this on every backend Paper/Purpur server.
+  - No database and no heavy auth logic.
+  - Blocks players until the proxy confirms they are logged in.
 
 ## Install
 
-1. Build or copy `Auth-1.0.0.jar` into your `plugins/` folder.
-2. Start the server once to generate `plugins/Auth/`.
-3. Edit `config.yml`.
-4. Run `/zauth reload` as an admin.
+1. Put `Auth-Proxy-*.jar` in the proxy `plugins/` folder.
+2. Put `Auth-Backend-*.jar` in each backend server `plugins/` folder.
+3. Start the proxy once so `config.yml` is generated.
+4. Edit only the proxy config if you want MySQL/MariaDB/PostgreSQL instead of SQLite.
 
-## Widgets
-
-### Build Status
-
-[![Build Status](https://img.shields.io/github/actions/workflow/status/zraxgaming/zcraft-auth/build.yml?branch=main&style=for-the-badge)](https://github.com/zraxgaming/zcraft-auth/actions)
-
-### Release
-
-[![Latest Release](https://img.shields.io/github/v/release/zraxgaming/zcraft-auth?style=for-the-badge)](https://github.com/zraxgaming/zcraft-auth/releases)
-
-### Supported Versions
-
-[![Minecraft](https://img.shields.io/badge/Minecraft-Paper%2FPurpur%201.21.x-2ea44f?style=for-the-badge)](https://papermc.io/)
-[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge)](https://adoptium.net/)
-[![License](https://img.shields.io/github/license/zraxgaming/zcraft-auth?style=for-the-badge)](LICENSE)
+The backend and proxy auto-detect each other over the `zcraftauth:state` plugin message channel. No backend database config is needed.
 
 ## Commands
 
-| Command | Purpose | Permission |
-| --- | --- | --- |
-| `/login <password>` | Log in | `zcraftauth.login` |
-| `/register <password> <confirm>` | Create account | `zcraftauth.register` |
-| `/logout` | Log out | `zcraftauth.logout` |
-| `/changepass <old> <new>` | Change password | `zcraftauth.changepassword` |
-| `/email add <address>` | Register email | `zcraftauth.email` |
-| `/email change <address>` | Change email | `zcraftauth.email` |
-| `/email verify <code>` | Confirm email | `zcraftauth.email` |
-| `/email recover` | Send temp password | `zcraftauth.email` |
-| `/2fa enable` | Enable TOTP 2FA | `zcraftauth.2fa` |
-| `/2fa disable <code>` | Disable TOTP 2FA | `zcraftauth.2fa` |
-| `/2fa verify <code>` | Enter 2FA code | `zcraftauth.2fa` |
-| `/forcelogin <player>` | Force login a player | `zcraftauth.forcelogin` |
-| `/zauth reload` | Reload config and languages | `zcraftauth.admin` |
-| `/zauth backup` | Manual database backup | `zcraftauth.admin` |
-| `/zauth import` | Import accounts | `zcraftauth.admin` |
-| `/zauth unregister <player>` | Delete account | `zcraftauth.admin` |
-| `/zauth restrict <player> [ip]` | Lock account to IP | `zcraftauth.admin` |
-| `/zauth unrestrict <player>` | Remove IP lock | `zcraftauth.admin` |
-| `/zauth accounts` | Show stats | `zcraftauth.admin` |
-| `/zauth antibot` | Show AntiBot status | `zcraftauth.admin` |
-
-## Permissions
-
-| Permission | Default | Purpose |
-| --- | --- | --- |
-| `zcraftauth.login` | `true` | Use `/login` |
-| `zcraftauth.register` | `true` | Use `/register` |
-| `zcraftauth.logout` | `true` | Use `/logout` |
-| `zcraftauth.changepassword` | `true` | Use `/changepass` |
-| `zcraftauth.email` | `true` | Use `/email` |
-| `zcraftauth.2fa` | `true` | Use `/2fa` |
-| `zcraftauth.forcelogin` | `op` | Use `/forcelogin` |
-| `zcraftauth.admin` | `op` | Admin commands and reloads |
-| `zcraftauth.bypass.antibot` | `op` | Skip AntiBot checks |
-| `zcraftauth.bypass.country` | `op` | Skip country restrictions |
-| `zcraftauth.bypass.iplock` | `op` | Skip IP-lock checks |
-| `zcraftauth.premium.bypass` | `false` | Force premium treatment |
+| Command | Purpose |
+| --- | --- |
+| `/login <password>` | Log in |
+| `/l <password>` | Alias for login |
+| `/register <password> <password>` | Create account |
+| `/reg <password> <password>` | Alias for register |
 
 ## Config
 
-`config.yml` contains feature toggles for the major modules:
+The proxy config is intentionally small:
 
-- Player commands
-- Session restore
-- Premium auto-login
-- AntiBot
-- Country restrictions
-- Spoofing protection
-- Inventory protection
-- Backups
-- Discord logging
-- Cache
-- Legacy hash migration
-- GUI prompts
+```yml
+general:
+  login-timeout: 0
+  register-timeout: 0
 
-All message fields support MiniMessage tags.
+database:
+  type: sqlite
+  sqlite:
+    file: auth.db
+  external:
+    host: localhost
+    port: 3306
+    database: zcraft_auth
+    username: root
+    password: ""
+```
 
-## License And Attribution
-
-This project is distributed under CC-BY-NC-SA 4.0.
-
-- Keep `LICENSE` in redistributed copies.
-- Preserve the attribution in `plugin.yml`.
-- Link the original repository: `https://github.com/zraxgaming/ffa-plugin`.
-- If you fork or modify the project, clearly mark your changes in the README.
-- Include the source attribution text from the license file in any modified source distribution.
-
-License text: [LICENSE](LICENSE)
+Set `login-timeout` or `register-timeout` to `0` to disable timeout kicks. Set `database.type` to `mysql`, `mariadb`, or `postgresql` to use the `external` block.
 
 ## Notes
 
-- Existing `plugins/ZCraftAuth/` data is migrated into `plugins/Auth/` on first start.
-- The admin command is `/zauth`; player commands are generic and non-branded.
-- The plugin keeps existing permission nodes for compatibility with older configs and integrations.
+- Java 21 is required.
+- Backend servers should be Paper or Purpur 1.21.x.
+- Velocity and Bungee are supported by the same proxy jar.
+- Same-IP player limits are disabled by default.
+
+## License
+
+This project is distributed under CC-BY-NC-SA 4.0. See [LICENSE](LICENSE).

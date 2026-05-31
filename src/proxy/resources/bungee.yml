@@ -1,0 +1,5 @@
+name: Auth
+version: '1.0.0'
+main: xyz.zcraft.studio.auth.proxy.bungee.BungeeAuthPlugin
+description: "Proxy-side authentication for BungeeCord."
+author: ZCraft Studios

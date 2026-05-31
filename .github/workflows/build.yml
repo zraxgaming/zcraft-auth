@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build Plugin
+    name: Build Plugins
     runs-on: ubuntu-latest
 
     steps:
@@ -23,12 +23,23 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Build with Maven
-        run: mvn -B -DskipTests package
+      - name: Build proxy plugin
+        run: mvn -B -DskipTests clean package -Pproxy
+
+      - name: Keep proxy artifact
+        run: |
+          mkdir -p artifacts
+          cp target/Auth-Proxy-*.jar artifacts/
+
+      - name: Build backend plugin
+        run: mvn -B -DskipTests clean package -Pbackend
+
+      - name: Keep backend artifact
+        run: cp target/Auth-Backend-*.jar artifacts/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Auth
-          path: target/Auth-*.jar
+          name: Auth-Plugins
+          path: artifacts/*.jar
           if-no-files-found: error

@@ -28,20 +28,20 @@ public class ConfigManager {
 
     public String getDefaultLanguage()       { return cfg.getString("general.default-language", "en"); }
     public String getPrefix()                { return cfg.getString("general.prefix", "[Auth] "); }
-    public int    getLoginTimeout()          { return cfg.getInt("general.login-timeout", 30); }
-    public int    getRegisterTimeout()       { return cfg.getInt("general.register-timeout", 60); }
+    public int    getLoginTimeout()          { return cfg.getInt("general.login-timeout", 0); }
+    public int    getRegisterTimeout()       { return cfg.getInt("general.register-timeout", 0); }
     public int    getMaxLoginAttempts()      { return cfg.getInt("general.max-login-attempts", 5); }
     public int    getAttemptBanDuration()    { return cfg.getInt("general.attempt-ban-duration", 10); }
-    public boolean isLimboEnabled()          { return cfg.getBoolean("general.limbo-spawn.enabled", true); }
-    public String getLimboWorld()            { return cfg.getString("general.limbo-spawn.world", "world"); }
-    public double getLimboX()                { return cfg.getDouble("general.limbo-spawn.x", 0); }
-    public double getLimboY()                { return cfg.getDouble("general.limbo-spawn.y", 64); }
-    public double getLimboZ()                { return cfg.getDouble("general.limbo-spawn.z", 0); }
+    public boolean isLimboEnabled()          { return cfg.getBoolean("location.enabled", cfg.getBoolean("general.limbo-spawn.enabled", true)); }
+    public String getLimboWorld()            { return cfg.getString("location.world", cfg.getString("general.limbo-spawn.world", "world")); }
+    public double getLimboX()                { return cfg.getDouble("location.x", cfg.getDouble("general.limbo-spawn.x", 0)); }
+    public double getLimboY()                { return cfg.getDouble("location.y", cfg.getDouble("general.limbo-spawn.y", 64)); }
+    public double getLimboZ()                { return cfg.getDouble("location.z", cfg.getDouble("general.limbo-spawn.z", 0)); }
     public float  getLimboYaw()              { return (float) cfg.getDouble("general.limbo-spawn.yaw", 0); }
     public float  getLimboPitch()            { return (float) cfg.getDouble("general.limbo-spawn.pitch", 0); }
     public boolean isTeleportToLastLocation(){ return cfg.getBoolean("general.teleport-to-last-location", true); }
-    public boolean isHideInTablist()         { return cfg.getBoolean("general.hide-in-tablist", true); }
-    public boolean isInvisibleBeforeAuth()   { return cfg.getBoolean("general.invisible-before-auth", true); }
+    public boolean isHideInTablist()         { return cfg.getBoolean("general.hide-in-tablist", false); }
+    public boolean isInvisibleBeforeAuth()   { return cfg.getBoolean("general.invisible-before-auth", false); }
     public boolean isAllowChatBeforeAuth()   { return cfg.getBoolean("general.allow-chat-before-auth", false); }
     public List<String> getAllowedCommands()  { return cfg.getStringList("general.allowed-commands-before-auth"); }
 
@@ -71,26 +71,33 @@ public class ConfigManager {
 
     public String getDatabaseType()          { return cfg.getString("database.type", "sqlite"); }
     public String getSQLiteFile()            { return cfg.getString("database.sqlite.file", "auth.db"); }
-    public String getMySQLHost()             { return cfg.getString("database.mysql.host", "localhost"); }
-    public int    getMySQLPort()             { return cfg.getInt("database.mysql.port", 3306); }
-    public String getMySQLDatabase()         { return cfg.getString("database.mysql.database", "zcraft_auth"); }
-    public String getMySQLUsername()         { return cfg.getString("database.mysql.username", "root"); }
-    public String getMySQLPassword()         { return cfg.getString("database.mysql.password", ""); }
-    public boolean isMySQLSSL()              { return cfg.getBoolean("database.mysql.ssl", false); }
-    public String getMySQLTable()            { return cfg.getString("database.mysql.table", "zcraft_accounts"); }
-    public String getColumnName(String key)  { return cfg.getString("database.mysql.columns." + key, key); }
-    public int    getPoolMaxSize()           { return cfg.getInt("database.mysql.pool.maximum-pool-size", 10); }
-    public int    getPoolMinIdle()           { return cfg.getInt("database.mysql.pool.minimum-idle", 2); }
-    public long   getPoolConnTimeout()       { return cfg.getLong("database.mysql.pool.connection-timeout", 30000); }
-    public long   getPoolIdleTimeout()       { return cfg.getLong("database.mysql.pool.idle-timeout", 600000); }
-    public long   getPoolMaxLifetime()       { return cfg.getLong("database.mysql.pool.max-lifetime", 1800000); }
+    public String getExternalHost()          { return cfg.getString("database.external.host", cfg.getString("database.mysql.host", cfg.getString("database.postgresql.host", "localhost"))); }
+    public int    getExternalPort()          { return cfg.getInt("database.external.port", cfg.getInt("database.mysql.port", cfg.getInt("database.postgresql.port", 3306))); }
+    public String getExternalDatabase()      { return cfg.getString("database.external.database", cfg.getString("database.mysql.database", cfg.getString("database.postgresql.database", "zcraft_auth"))); }
+    public String getExternalUsername()      { return cfg.getString("database.external.username", cfg.getString("database.mysql.username", cfg.getString("database.postgresql.username", "root"))); }
+    public String getExternalPassword()      { return cfg.getString("database.external.password", cfg.getString("database.mysql.password", cfg.getString("database.postgresql.password", ""))); }
+    public boolean isExternalSSL()           { return cfg.getBoolean("database.external.ssl", cfg.getBoolean("database.mysql.ssl", false)); }
+    public String getExternalTable()         { return cfg.getString("database.external.table", cfg.getString("database.mysql.table", cfg.getString("database.postgresql.table", "zcraft_accounts"))); }
+    public String getColumnName(String key)  { return cfg.getString("database.external.columns." + key, cfg.getString("database.mysql.columns." + key, key)); }
+    public int    getPoolMaxSize()           { return cfg.getInt("database.external.pool.maximum-pool-size", cfg.getInt("database.mysql.pool.maximum-pool-size", 10)); }
+    public int    getPoolMinIdle()           { return cfg.getInt("database.external.pool.minimum-idle", cfg.getInt("database.mysql.pool.minimum-idle", 2)); }
+    public long   getPoolConnTimeout()       { return cfg.getLong("database.external.pool.connection-timeout", cfg.getLong("database.mysql.pool.connection-timeout", 30000)); }
+    public long   getPoolIdleTimeout()       { return cfg.getLong("database.external.pool.idle-timeout", cfg.getLong("database.mysql.pool.idle-timeout", 600000)); }
+    public long   getPoolMaxLifetime()       { return cfg.getLong("database.external.pool.max-lifetime", cfg.getLong("database.mysql.pool.max-lifetime", 1800000)); }
 
-    public String getPgHost()                { return cfg.getString("database.postgresql.host", "localhost"); }
-    public int    getPgPort()                { return cfg.getInt("database.postgresql.port", 5432); }
-    public String getPgDatabase()            { return cfg.getString("database.postgresql.database", "zcraft_auth"); }
-    public String getPgUsername()            { return cfg.getString("database.postgresql.username", "postgres"); }
-    public String getPgPassword()            { return cfg.getString("database.postgresql.password", ""); }
-    public String getPgTable()               { return cfg.getString("database.postgresql.table", "zcraft_accounts"); }
+    public String getMySQLHost()             { return getExternalHost(); }
+    public int    getMySQLPort()             { return getExternalPort(); }
+    public String getMySQLDatabase()         { return getExternalDatabase(); }
+    public String getMySQLUsername()         { return getExternalUsername(); }
+    public String getMySQLPassword()         { return getExternalPassword(); }
+    public boolean isMySQLSSL()              { return isExternalSSL(); }
+    public String getMySQLTable()            { return getExternalTable(); }
+    public String getPgHost()                { return getExternalHost(); }
+    public int    getPgPort()                { return cfg.getInt("database.external.port", cfg.getInt("database.postgresql.port", 5432)); }
+    public String getPgDatabase()            { return getExternalDatabase(); }
+    public String getPgUsername()            { return getExternalUsername(); }
+    public String getPgPassword()            { return getExternalPassword(); }
+    public String getPgTable()               { return getExternalTable(); }
 
     public boolean isCacheEnabled()          { return isCacheFeatureEnabled() && cfg.getBoolean("database.cache-enabled", true); }
     public int    getCacheExpiry()           { return cfg.getInt("database.cache-expiry", 300); }
@@ -158,7 +165,7 @@ public class ConfigManager {
 
     public boolean isAntiBotEnabled()        { return isAntiBotFeatureEnabled() && cfg.getBoolean("antibot.enabled", true); }
     public int    getMaxJoinsPerSecond()     { return cfg.getInt("antibot.max-joins-per-second", 5); }
-    public int    getMaxPerIP()              { return cfg.getInt("antibot.max-per-ip", 3); }
+    public int    getMaxPerIP()              { return cfg.getInt("antibot.max-per-ip", 0); }
     public int    getAntiBotActiveDuration() { return cfg.getInt("antibot.active-duration", 300); }
     public String getAntiBotKickMessage()    { return cfg.getString("antibot.kick-message", "<red>AntiBot active."); }
     public List<String> getAntiBotWhitelist(){ return cfg.getStringList("antibot.whitelisted-ips"); }
