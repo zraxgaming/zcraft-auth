@@ -51,28 +51,31 @@ public class LoginCommand implements CommandExecutor, TabCompleter {
         }
 
         String password = args[0];
-        AuthManager.LoginResult result = plugin.getAuthManager().attemptLogin(player, password);
-
-        switch (result) {
-            case SUCCESS -> {}  // message sent by completeLogin
-            case WRONG_PASSWORD -> {
-                int attempts = 1;  // actual count tracked internally
-                int max = plugin.getConfigManager().getMaxLoginAttempts();
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "login.wrong-password", Map.of("attempt", "?", "max", String.valueOf(max)))));
-            }
-            case NOT_REGISTERED -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "not-registered")));
-            case NEEDS_2FA -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "two-factor.prompt")));
-            case ATTEMPT_BANNED -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "login.max-attempts", Map.of("time", "?"))));
-            case COOLDOWN -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "login.cooldown", Map.of("time", "0.5"))));
-            case ERROR -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "error.database")));
-            default -> {}
-        }
+        plugin.getAuthManager().attemptLoginAsync(player, password).thenAccept(result ->
+                plugin.runSync(() -> {
+                    switch (result) {
+                        case SUCCESS -> {
+                        }
+                        case WRONG_PASSWORD -> {
+                            int max = plugin.getConfigManager().getMaxLoginAttempts();
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "login.wrong-password", Map.of("attempt", "?", "max", String.valueOf(max)))));
+                        }
+                        case NOT_REGISTERED -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "not-registered")));
+                        case NEEDS_2FA -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "two-factor.prompt")));
+                        case ATTEMPT_BANNED -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "login.max-attempts", Map.of("time", "?"))));
+                        case COOLDOWN -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "login.cooldown", Map.of("time", "0.5"))));
+                        case ERROR -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "error.database")));
+                        default -> {
+                        }
+                    }
+                })
+        );
         return true;
     }
 

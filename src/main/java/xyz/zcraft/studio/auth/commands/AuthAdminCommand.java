@@ -51,14 +51,16 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
             case "backup" -> {
                 sender.sendMessage(mm.deserialize(plugin.getLanguageManager().getDefault("admin.backup-started")));
                 File dir = new File(plugin.getDataFolder(), plugin.getConfigManager().getBackupDirectory());
-                plugin.getDatabase().backup(dir.getAbsolutePath()).thenAccept(path -> {
-                    if (path != null) {
-                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                .getDefault("admin.backup-success", Map.of("file", new File(path).getName()))));
-                    } else {
-                        sender.sendMessage(mm.deserialize("<red>Backup failed. Check the console."));
-                    }
-                });
+                plugin.getDatabase().backup(dir.getAbsolutePath()).thenAccept(path ->
+                        plugin.runSync(() -> {
+                            if (path != null) {
+                                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .getDefault("admin.backup-success", Map.of("file", new File(path).getName()))));
+                            } else {
+                                sender.sendMessage(mm.deserialize("<red>Backup failed. Check the console."));
+                            }
+                        })
+                );
             }
 
             case "import" -> {
@@ -68,7 +70,9 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                         .getDefault("admin.import-started", Map.of("source", source))));
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                     int count = new AccountImporter(plugin).importFrom(source, path);
-                    sender.sendMessage(mm.deserialize("<green>Import complete: " + count + " accounts."));
+                    plugin.runSync(() ->
+                            sender.sendMessage(mm.deserialize("<green>Import complete: " + count + " accounts."))
+                    );
                 });
             }
 
@@ -79,23 +83,26 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 String name = args[1];
-                plugin.getDatabase().findByUsername(name).thenAccept(opt -> {
-                    if (opt.isEmpty()) {
-                        sender.sendMessage(mm.deserialize("<red>No account: " + name));
-                        return;
-                    }
-                    plugin.getDatabase().deletePlayer(opt.get().uuid()).thenRun(() -> {
-                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                .getDefault("admin.unregistered", Map.of("player", name))));
-                        Player online = plugin.getServer().getPlayerExact(name);
-                        if (online != null && online.isOnline()) {
-                            plugin.getServer().getScheduler().runTask(plugin, () ->
-                                    online.kick(mm.deserialize("<red>Your account was deleted by an administrator.")));
-                        }
-                        plugin.getDiscordLogger().logAdminAction(
-                                sender.getName(), "UNREGISTER", name, "Account deleted");
-                    });
-                });
+                plugin.getDatabase().findByUsername(name).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) {
+                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                return;
+                            }
+                            plugin.getDatabase().deletePlayer(opt.get().uuid()).thenRun(() ->
+                                    plugin.runSync(() -> {
+                                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                                .getDefault("admin.unregistered", Map.of("player", name))));
+                                        Player online = plugin.getServer().getPlayerExact(name);
+                                        if (online != null && online.isOnline()) {
+                                            online.kick(mm.deserialize("<red>Your account was deleted by an administrator."));
+                                        }
+                                        plugin.getDiscordLogger().logAdminAction(
+                                                sender.getName(), "UNREGISTER", name, "Account deleted");
+                                    })
+                            );
+                        })
+                );
             }
 
             case "restrict" -> {
@@ -117,19 +124,23 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                         return true;
                     }
                 }
-                plugin.getDatabase().findByUsername(name).thenAccept(opt -> {
-                    if (opt.isEmpty()) {
-                        sender.sendMessage(mm.deserialize("<red>No account: " + name));
-                        return;
-                    }
-                    plugin.getDatabase().updatePlayer(
-                            opt.get().toBuilder().restricted(true).restrictedIp(lockIp).build()
-                    ).thenRun(() -> {
-                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                .getDefault("admin.restricted", Map.of("player", name, "ip", lockIp))));
-                        plugin.getDiscordLogger().logAdminAction(sender.getName(), "RESTRICT", name, "Locked to " + lockIp);
-                    });
-                });
+                plugin.getDatabase().findByUsername(name).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) {
+                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                return;
+                            }
+                            plugin.getDatabase().updatePlayer(
+                                    opt.get().toBuilder().restricted(true).restrictedIp(lockIp).build()
+                            ).thenRun(() ->
+                                    plugin.runSync(() -> {
+                                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                                .getDefault("admin.restricted", Map.of("player", name, "ip", lockIp))));
+                                        plugin.getDiscordLogger().logAdminAction(sender.getName(), "RESTRICT", name, "Locked to " + lockIp);
+                                    })
+                            );
+                        })
+                );
             }
 
             case "unrestrict" -> {
@@ -139,19 +150,23 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 String name = args[1];
-                plugin.getDatabase().findByUsername(name).thenAccept(opt -> {
-                    if (opt.isEmpty()) {
-                        sender.sendMessage(mm.deserialize("<red>No account: " + name));
-                        return;
-                    }
-                    plugin.getDatabase().updatePlayer(
-                            opt.get().toBuilder().restricted(false).restrictedIp(null).build()
-                    ).thenRun(() -> {
-                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                .getDefault("admin.unrestricted", Map.of("player", name))));
-                        plugin.getDiscordLogger().logAdminAction(sender.getName(), "UNRESTRICT", name, "IP lock removed");
-                    });
-                });
+                plugin.getDatabase().findByUsername(name).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) {
+                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                return;
+                            }
+                            plugin.getDatabase().updatePlayer(
+                                    opt.get().toBuilder().restricted(false).restrictedIp(null).build()
+                            ).thenRun(() ->
+                                    plugin.runSync(() -> {
+                                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                                .getDefault("admin.unrestricted", Map.of("player", name))));
+                                        plugin.getDiscordLogger().logAdminAction(sender.getName(), "UNRESTRICT", name, "IP lock removed");
+                                    })
+                            );
+                        })
+                );
             }
 
             case "accounts" -> sender.sendMessage(mm.deserialize(

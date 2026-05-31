@@ -40,44 +40,47 @@ public class ChangePasswordCommand implements CommandExecutor, TabCompleter {
         String oldPw = args[0];
         String newPw = args[1];
 
-        plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-            if (opt.isEmpty()) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "error.generic")));
-                return;
-            }
-            PlayerData data = opt.get();
-            PasswordEngine engine = new PasswordEngine(plugin);
+        plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                plugin.runSync(() -> {
+                    if (opt.isEmpty()) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "error.generic")));
+                        return;
+                    }
 
-            if (!engine.verify(oldPw, data.passwordHash()).matched()) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "changepassword.wrong-old")));
-                return;
-            }
-            if (oldPw.equals(newPw)) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "changepassword.same-as-old")));
-                return;
-            }
-            if (newPw.length() < plugin.getConfigManager().getPasswordMinLength()) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "register.password-too-short",
-                                Map.of("min", String.valueOf(plugin.getConfigManager().getPasswordMinLength())))));
-                return;
-            }
-            if (newPw.length() > plugin.getConfigManager().getPasswordMaxLength()) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "register.password-too-long",
-                                Map.of("max", String.valueOf(plugin.getConfigManager().getPasswordMaxLength())))));
-                return;
-            }
+                    PlayerData data = opt.get();
+                    PasswordEngine engine = new PasswordEngine(plugin);
 
-            String newHash = engine.hash(newPw);
-            PlayerData updated = data.toBuilder().passwordHash(newHash).build();
-            plugin.getDatabase().updatePlayer(updated).thenRun(() ->
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "changepassword.success")))
-            );
-        });
+                    if (!engine.verify(oldPw, data.passwordHash()).matched()) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "changepassword.wrong-old")));
+                        return;
+                    }
+                    if (oldPw.equals(newPw)) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "changepassword.same-as-old")));
+                        return;
+                    }
+                    if (newPw.length() < plugin.getConfigManager().getPasswordMinLength()) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-too-short",
+                                        Map.of("min", String.valueOf(plugin.getConfigManager().getPasswordMinLength())))));
+                        return;
+                    }
+                    if (newPw.length() > plugin.getConfigManager().getPasswordMaxLength()) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-too-long",
+                                        Map.of("max", String.valueOf(plugin.getConfigManager().getPasswordMaxLength())))));
+                        return;
+                    }
+
+                    String newHash = engine.hash(newPw);
+                    PlayerData updated = data.toBuilder().passwordHash(newHash).build();
+                    plugin.getDatabase().updatePlayer(updated).thenRun(() ->
+                            plugin.runSync(() -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "changepassword.success"))))
+                    );
+                })
+        );
         return true;
     }
 

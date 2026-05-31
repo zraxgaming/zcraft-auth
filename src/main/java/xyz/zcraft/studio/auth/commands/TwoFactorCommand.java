@@ -1,7 +1,10 @@
 package xyz.zcraft.studio.auth.commands;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import xyz.zcraft.studio.auth.ZCraftAuth;
 import xyz.zcraft.studio.auth.database.PlayerData;
@@ -17,7 +20,9 @@ public class TwoFactorCommand implements CommandExecutor, TabCompleter {
     private final ZCraftAuth plugin;
     private final MiniMessage mm = MiniMessage.miniMessage();
 
-    public TwoFactorCommand(ZCraftAuth plugin) { this.plugin = plugin; }
+    public TwoFactorCommand(ZCraftAuth plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -34,7 +39,6 @@ public class TwoFactorCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        // If player is pending 2FA verification, /2fa verify <code> is the flow
         if (plugin.getAuthManager().isPending2FA(player.getUniqueId())) {
             if (args.length >= 2 && args[0].equalsIgnoreCase("verify")) {
                 handlePendingVerify(player, args[1]);
@@ -57,60 +61,69 @@ public class TwoFactorCommand implements CommandExecutor, TabCompleter {
         }
 
         switch (args[0].toLowerCase()) {
+            case "enable" -> plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                    plugin.runSync(() -> {
+                        if (opt.isEmpty()) {
+                            return;
+                        }
 
-            // /2fa enable ─────────────────────────────────────────────────────
-            case "enable" -> plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                if (opt.isEmpty()) return;
-                PlayerData data = opt.get();
-                if (data.has2FA()) {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.already-enabled")));
-                    return;
-                }
-                String secret = plugin.getTwoFactorManager().generateSecret();
-                String qr     = plugin.getTwoFactorManager().generateOtpAuthUrl(player.getName(), secret);
+                        PlayerData data = opt.get();
+                        if (data.has2FA()) {
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "two-factor.already-enabled")));
+                            return;
+                        }
 
-                // Store secret temporarily — only made permanent after first successful verify
-                // For simplicity, we store immediately and the player uses /2fa verify to confirm
-                PlayerData updated = data.toBuilder().totpSecret(secret).build();
-                plugin.getDatabase().updatePlayer(updated).thenRun(() -> {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.setup-info")));
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.setup-key", Map.of("key", secret))));
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.setup-qr", Map.of("url", qr))));
-                });
-            });
+                        String secret = plugin.getTwoFactorManager().generateSecret();
+                        String qr = plugin.getTwoFactorManager().generateOtpAuthUrl(player.getName(), secret);
+                        PlayerData updated = data.toBuilder().totpSecret(secret).build();
 
-            // /2fa disable ────────────────────────────────────────────────────
-            case "disable" -> plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                if (opt.isEmpty()) return;
-                PlayerData data = opt.get();
-                if (!data.has2FA()) {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.not-enabled")));
-                    return;
-                }
-                // Require code to disable
-                if (args.length < 2) {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "error.usage", Map.of("usage", "/" + label + " disable <code>"))));
-                    return;
-                }
-                if (!plugin.getTwoFactorManager().verifyCode(data.totpSecret(), args[1])) {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.invalid-code")));
-                    return;
-                }
-                PlayerData updated = data.toBuilder().totpSecret(null).build();
-                plugin.getDatabase().updatePlayer(updated).thenRun(() ->
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "two-factor.disabled")))
-                );
-            });
+                        plugin.getDatabase().updatePlayer(updated).thenRun(() ->
+                                plugin.runSync(() -> {
+                                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                            .get(player, "two-factor.setup-info")));
+                                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                            .get(player, "two-factor.setup-key", Map.of("key", secret))));
+                                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                            .get(player, "two-factor.setup-qr", Map.of("url", qr))));
+                                })
+                        );
+                    })
+            );
 
-            // /2fa verify <code> ──────────────────────────────────────────────
+            case "disable" -> plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                    plugin.runSync(() -> {
+                        if (opt.isEmpty()) {
+                            return;
+                        }
+
+                        PlayerData data = opt.get();
+                        if (!data.has2FA()) {
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "two-factor.not-enabled")));
+                            return;
+                        }
+
+                        if (args.length < 2) {
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "error.usage", Map.of("usage", "/" + label + " disable <code>"))));
+                            return;
+                        }
+
+                        if (!plugin.getTwoFactorManager().verifyCode(data.totpSecret(), args[1])) {
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "two-factor.invalid-code")));
+                            return;
+                        }
+
+                        PlayerData updated = data.toBuilder().totpSecret(null).build();
+                        plugin.getDatabase().updatePlayer(updated).thenRun(() ->
+                                plugin.runSync(() -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .get(player, "two-factor.disabled"))))
+                        );
+                    })
+            );
+
             case "verify" -> {
                 if (args.length < 2) {
                     player.sendMessage(mm.deserialize(plugin.getLanguageManager()
@@ -127,20 +140,23 @@ public class TwoFactorCommand implements CommandExecutor, TabCompleter {
     }
 
     private void handlePendingVerify(Player player, String code) {
-        boolean ok = plugin.getAuthManager().attempt2FA(player, code);
-        if (!ok) {
-            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                    .get(player, "two-factor.invalid-code")));
-        }
-        // Success message handled by completeLogin inside AuthManager
+        plugin.getAuthManager().attempt2FAAsync(player, code).thenAccept(ok ->
+                plugin.runSync(() -> {
+                    if (!ok) {
+                        player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "two-factor.invalid-code")));
+                    }
+                })
+        );
     }
 
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
         if (!plugin.getConfigManager().is2FAEnabled()) return List.of();
-        if (a.length == 1)
+        if (a.length == 1) {
             return List.of("enable", "disable", "verify").stream()
                     .filter(x -> x.startsWith(a[0].toLowerCase())).toList();
+        }
         return List.of();
     }
 }

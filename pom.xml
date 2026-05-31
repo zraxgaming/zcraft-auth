@@ -61,6 +61,13 @@
             <version>0.10.2</version>
         </dependency>
 
+        <!-- bStats -->
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- Argon2 -->
         <dependency>
             <groupId>de.mkammerer</groupId>
@@ -166,6 +173,10 @@
                                 <relocation>
                                     <pattern>at.favre.lib</pattern>
                                     <shadedPattern>xyz.zcraft.studio.auth.libs.bcrypt</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.bstats</pattern>
+                                    <shadedPattern>xyz.zcraft.studio.auth.libs.bstats</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>de.mkammerer.argon2</pattern>

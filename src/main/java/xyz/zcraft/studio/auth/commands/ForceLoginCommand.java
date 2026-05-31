@@ -40,21 +40,22 @@ public class ForceLoginCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        plugin.getDatabase().findByUUID(target.getUniqueId()).thenAccept(opt -> {
-            if (opt.isEmpty()) {
-                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .getDefault("forcelogin.not-registered", Map.of("player", args[0]))));
-                return;
-            }
-            plugin.getServer().getScheduler().runTask(plugin, () -> {
-                plugin.getAuthManager().completeLogin(target, opt.get(), PlayerAuthEvent.AuthMethod.FORCE);
-                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .getDefault("forcelogin.success", Map.of("player", target.getName()))));
-                plugin.getLogger().info("[ForceLogin] " + sender.getName() + " -> " + target.getName());
-                plugin.getDiscordLogger().logAdminAction(sender.getName(), "FORCE LOGIN",
-                        target.getName(), "Force-logged in by " + sender.getName());
-            });
-        });
+        plugin.getDatabase().findByUUID(target.getUniqueId()).thenAccept(opt ->
+                plugin.runSync(() -> {
+                    if (opt.isEmpty()) {
+                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .getDefault("forcelogin.not-registered", Map.of("player", args[0]))));
+                        return;
+                    }
+
+                    plugin.getAuthManager().completeLogin(target, opt.get(), PlayerAuthEvent.AuthMethod.FORCE);
+                    sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                            .getDefault("forcelogin.success", Map.of("player", target.getName()))));
+                    plugin.getLogger().info("[ForceLogin] " + sender.getName() + " -> " + target.getName());
+                    plugin.getDiscordLogger().logAdminAction(sender.getName(), "FORCE LOGIN",
+                            target.getName(), "Force-logged in by " + sender.getName());
+                })
+        );
         return true;
     }
 

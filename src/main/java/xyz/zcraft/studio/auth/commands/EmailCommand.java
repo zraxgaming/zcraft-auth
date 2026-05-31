@@ -61,15 +61,17 @@ public class EmailCommand implements CommandExecutor, TabCompleter {
                     player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.invalid")));
                     return true;
                 }
-                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                    if (opt.isEmpty()) return;
-                    PlayerData data = opt.get();
-                    if (data.email() != null && !data.email().isBlank() && data.emailVerified()) {
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.already-set")));
-                        return;
-                    }
-                    sendVerificationAndSave(player, data, address);
-                });
+                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) return;
+                            PlayerData data = opt.get();
+                            if (data.email() != null && !data.email().isBlank() && data.emailVerified()) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.already-set")));
+                                return;
+                            }
+                            sendVerificationAndSave(player, data, address);
+                        })
+                );
             }
 
             // ── /email change <address> ───────────────────────────────────────
@@ -88,12 +90,14 @@ public class EmailCommand implements CommandExecutor, TabCompleter {
                     player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.invalid")));
                     return true;
                 }
-                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                    if (opt.isEmpty()) return;
-                    sendVerificationAndSave(player, opt.get(), address);
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "email.changed", Map.of("email", address))));
-                });
+                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) return;
+                            sendVerificationAndSave(player, opt.get(), address);
+                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .get(player, "email.changed", Map.of("email", address))));
+                        })
+                );
             }
 
             // ── /email verify <code> ──────────────────────────────────────────
@@ -104,34 +108,35 @@ public class EmailCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 String code = args[1];
-                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                    if (opt.isEmpty()) return;
-                    PlayerData data = opt.get();
+                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty()) return;
+                            PlayerData data = opt.get();
 
-                    if (!data.emailPending()) {
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-invalid")));
-                        return;
-                    }
-                    // Check expiry
-                    if (data.emailPendingExpiry() != null && Instant.now().isAfter(data.emailPendingExpiry())) {
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-expired")));
-                        return;
-                    }
-                    if (!code.equals(data.emailPendingToken())) {
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-invalid")));
-                        return;
-                    }
-                    // Mark verified
-                    PlayerData updated = data.toBuilder()
-                            .emailVerified(true)
-                            .emailPending(false)
-                            .emailPendingToken(null)
-                            .emailPendingExpiry(null)
-                            .build();
-                    plugin.getDatabase().updatePlayer(updated).thenRun(() ->
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.verified")))
-                    );
-                });
+                            if (!data.emailPending()) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-invalid")));
+                                return;
+                            }
+                            if (data.emailPendingExpiry() != null && Instant.now().isAfter(data.emailPendingExpiry())) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-expired")));
+                                return;
+                            }
+                            if (!code.equals(data.emailPendingToken())) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.token-invalid")));
+                                return;
+                            }
+
+                            PlayerData updated = data.toBuilder()
+                                    .emailVerified(true)
+                                    .emailPending(false)
+                                    .emailPendingToken(null)
+                                    .emailPendingExpiry(null)
+                                    .build();
+                            plugin.getDatabase().updatePlayer(updated).thenRun(() ->
+                                    plugin.runSync(() -> player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.verified"))))
+                            );
+                        })
+                );
             }
 
             // ── /email recover ────────────────────────────────────────────────
@@ -142,21 +147,25 @@ public class EmailCommand implements CommandExecutor, TabCompleter {
                     player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.rate-limited")));
                     return true;
                 }
-                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt -> {
-                    if (opt.isEmpty() || !opt.get().hasVerifiedEmail()) {
-                        player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.not-set")));
-                        return;
-                    }
-                    plugin.getEmailManager().sendRecovery(opt.get()).thenAccept(sent -> {
-                        if (sent) {
-                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                    .get(player, "email.recovery-success")));
-                        } else {
-                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                                    .get(player, "error.generic")));
-                        }
-                    });
-                });
+                plugin.getDatabase().findByUUID(player.getUniqueId()).thenAccept(opt ->
+                        plugin.runSync(() -> {
+                            if (opt.isEmpty() || !opt.get().hasVerifiedEmail()) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager().get(player, "email.not-set")));
+                                return;
+                            }
+                            plugin.getEmailManager().sendRecovery(opt.get()).thenAccept(sent ->
+                                    plugin.runSync(() -> {
+                                        if (sent) {
+                                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                                    .get(player, "email.recovery-success")));
+                                        } else {
+                                            player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                                    .get(player, "error.generic")));
+                                        }
+                                    })
+                            );
+                        })
+                );
             }
 
             default -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
@@ -177,19 +186,21 @@ public class EmailCommand implements CommandExecutor, TabCompleter {
                 .emailPendingExpiry(expiry)
                 .build();
 
-        plugin.getDatabase().updatePlayer(updated).thenRun(() -> {
-            plugin.getEmailManager().sendVerification(updated, address, code).thenAccept(sent -> {
-                if (sent) {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "email.added", Map.of("email", address))));
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "email.verify-prompt")));
-                } else {
-                    player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "error.generic")));
-                }
-            });
-        });
+        plugin.getDatabase().updatePlayer(updated).thenRun(() ->
+                plugin.getEmailManager().sendVerification(updated, address, code).thenAccept(sent ->
+                        plugin.runSync(() -> {
+                            if (sent) {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .get(player, "email.added", Map.of("email", address))));
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .get(player, "email.verify-prompt")));
+                            } else {
+                                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .get(player, "error.generic")));
+                            }
+                        })
+                )
+        );
     }
 
     @Override

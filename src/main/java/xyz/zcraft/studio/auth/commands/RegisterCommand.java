@@ -39,37 +39,32 @@ public class RegisterCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        // Check if already registered
-        plugin.getDatabase().isRegistered(player.getUniqueId()).thenAccept(registered -> {
-            if (registered) {
-                player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                        .get(player, "already-registered")));
-                return;
-            }
-
-            AuthManager.RegisterResult result = plugin.getAuthManager().register(player, args[0], args[1]);
-
-            plugin.getServer().getScheduler().runTask(plugin, () -> {
-                switch (result) {
-                    case SUCCESS  -> {} // message from completeLogin
-                    case MISMATCH -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "register.password-mismatch")));
-                    case TOO_SHORT -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "register.password-too-short",
-                                    Map.of("min", String.valueOf(plugin.getConfigManager().getPasswordMinLength())))));
-                    case TOO_LONG -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "register.password-too-long",
-                                    Map.of("max", String.valueOf(plugin.getConfigManager().getPasswordMaxLength())))));
-                    case UNSAFE -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "register.password-unsafe")));
-                    case INVALID_NAME -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "register.invalid-username")));
-                    case ERROR -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
-                            .get(player, "error.database")));
-                    default -> {}
-                }
-            });
-        });
+        plugin.getAuthManager().registerAsync(player, args[0], args[1]).thenAccept(result ->
+                plugin.runSync(() -> {
+                    switch (result) {
+                        case SUCCESS -> {
+                        }
+                        case MISMATCH -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-mismatch")));
+                        case TOO_SHORT -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-too-short",
+                                        Map.of("min", String.valueOf(plugin.getConfigManager().getPasswordMinLength())))));
+                        case TOO_LONG -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-too-long",
+                                        Map.of("max", String.valueOf(plugin.getConfigManager().getPasswordMaxLength())))));
+                        case UNSAFE -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.password-unsafe")));
+                        case INVALID_NAME -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "register.invalid-username")));
+                        case ALREADY_REGISTERED -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "already-registered")));
+                        case ERROR -> player.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .get(player, "error.database")));
+                        default -> {
+                        }
+                    }
+                })
+        );
 
         return true;
     }
