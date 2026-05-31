@@ -35,7 +35,7 @@ public final class AuthDatabase implements AutoCloseable {
     }
 
     public synchronized Optional<Account> find(UUID uuid) {
-        String sql = "SELECT uuid, username, password, last_ip, last_login, registered_at FROM " + table + " WHERE uuid = ?";
+        String sql = "SELECT uuid, username, password, last_ip, last_login, registered_at, totp_secret FROM " + table + " WHERE uuid = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -48,7 +48,8 @@ public final class AuthDatabase implements AutoCloseable {
                         rs.getString("password"),
                         rs.getString("last_ip"),
                         rs.getLong("last_login"),
-                        rs.getLong("registered_at")
+                        rs.getLong("registered_at"),
+                        rs.getString("totp_secret")
                 ));
             }
         } catch (SQLException ex) {
@@ -65,6 +66,30 @@ public final class AuthDatabase implements AutoCloseable {
             }
         } catch (SQLException ex) {
             throw new IllegalStateException("Could not check account", ex);
+        }
+    }
+
+    public synchronized Optional<Account> findByUsername(String username) {
+        String sql = "SELECT uuid, username, password, last_ip, last_login, registered_at, totp_secret FROM " + table
+                + " WHERE LOWER(username) = LOWER(?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(new Account(
+                        UUID.fromString(rs.getString("uuid")),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("last_ip"),
+                        rs.getLong("last_login"),
+                        rs.getLong("registered_at"),
+                        rs.getString("totp_secret")
+                ));
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Could not load account by username", ex);
         }
     }
 
@@ -93,6 +118,38 @@ public final class AuthDatabase implements AutoCloseable {
             ps.executeUpdate();
         } catch (SQLException ex) {
             throw new IllegalStateException("Could not update login", ex);
+        }
+    }
+
+    public synchronized void setPassword(UUID uuid, String passwordHash) {
+        String sql = "UPDATE " + table + " SET password = ? WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setString(2, uuid.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Could not update password", ex);
+        }
+    }
+
+    public synchronized void setTotpSecret(UUID uuid, String secret) {
+        String sql = "UPDATE " + table + " SET totp_secret = ? WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, secret);
+            ps.setString(2, uuid.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Could not update 2FA secret", ex);
+        }
+    }
+
+    public synchronized void delete(UUID uuid) {
+        String sql = "DELETE FROM " + table + " WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Could not delete account", ex);
         }
     }
 
@@ -145,12 +202,22 @@ public final class AuthDatabase implements AutoCloseable {
                         password VARCHAR(255),
                         last_ip VARCHAR(45),
                         last_login BIGINT,
-                        registered_at BIGINT
+                        registered_at BIGINT,
+                        totp_secret VARCHAR(64)
                     )
                     """.formatted(table));
+            addColumnIfMissing(stmt, "totp_secret VARCHAR(64)");
         }
     }
 
-    public record Account(UUID uuid, String username, String passwordHash, String lastIp, long lastLogin, long registeredAt) {
+    private void addColumnIfMissing(Statement stmt, String definition) {
+        try {
+            stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + definition);
+        } catch (SQLException ignored) {
+        }
+    }
+
+    public record Account(UUID uuid, String username, String passwordHash, String lastIp, long lastLogin,
+                          long registeredAt, String totpSecret) {
     }
 }

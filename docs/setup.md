@@ -28,9 +28,14 @@ The proxy jar handles:
 
 - `/login`, `/l`
 - `/register`, `/reg`
+- `/logout`, `/changepass`
+- `/2fa enable|verify|disable`
+- `/zauth` admin actions
 - Password hashing
+- Authenticator 2FA
 - SQLite/MySQL/MariaDB/PostgreSQL storage
 - Login and register timeout
+- Velocity boss bar prompts, with Bungee action bar fallback
 - Sending auth state to backend servers
 
 If the proxy cannot initialize the configured database, players are disconnected with an auth-not-ready message and the console logs the database/config error.
@@ -115,6 +120,28 @@ allowed-commands:
   - "/register"
   - "/l"
   - "/reg"
+  - "/2fa"
+  - "/totp"
+  - "/authenticator"
 ```
+
+## Admin Commands
+
+`/zauth` requires `zcraftauth.admin`.
+
+| Command | Purpose |
+| --- | --- |
+| `/zauth status` | Show authenticated count |
+| `/zauth unregister <player>` | Delete a login |
+| `/zauth setpassword <player> <password>` | Change a password |
+| `/zauth disable2fa <player>` | Remove authenticator 2FA |
+| `/zauth forcelogin <player>` | Mark a player logged in |
+| `/zauth logout <player>` | Mark a player logged out |
+
+## Config Updates
+
+The proxy config loader merges missing keys from the bundled default config into existing configs. It keeps your existing values and adds new keys when the plugin updates.
+
+Binary self-updating is not automatic yet; use GitHub Actions release artifacts for jar updates.
 
 Operators are not bypassed by default. If you turn on `enable-bypass-permission`, only players with `zcraftauth.backend.bypass` can skip backend protection.

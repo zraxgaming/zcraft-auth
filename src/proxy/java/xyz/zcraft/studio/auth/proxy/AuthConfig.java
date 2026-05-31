@@ -5,8 +5,10 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,13 +22,32 @@ public final class AuthConfig {
         try {
             Files.createDirectories(dataDirectory);
             Path config = dataDirectory.resolve("config.yml");
-            if (Files.notExists(config) && defaults != null) {
+            Yaml yaml = new Yaml();
+            if (defaults != null) {
                 try (defaults) {
-                    Files.copy(defaults, config);
+                    Object defaultLoaded = yaml.load(defaults);
+                    Map<String, Object> defaultMap = defaultLoaded instanceof Map<?, ?> map
+                            ? new LinkedHashMap<>(castMap(map)) : new LinkedHashMap<>();
+                    if (Files.notExists(config)) {
+                        try (Writer writer = Files.newBufferedWriter(config)) {
+                            yaml.dump(defaultMap, writer);
+                        }
+                    } else {
+                        try (Reader reader = Files.newBufferedReader(config)) {
+                            Object currentLoaded = yaml.load(reader);
+                            Map<String, Object> currentMap = currentLoaded instanceof Map<?, ?> map
+                                    ? new LinkedHashMap<>(castMap(map)) : new LinkedHashMap<>();
+                            if (mergeMissing(currentMap, defaultMap)) {
+                                try (Writer writer = Files.newBufferedWriter(config)) {
+                                    yaml.dump(currentMap, writer);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             try (Reader reader = Files.newBufferedReader(config)) {
-                Object loaded = new Yaml().load(reader);
+                Object loaded = yaml.load(reader);
                 this.root = loaded instanceof Map<?, ?> map ? castMap(map) : Map.of();
             }
         } catch (IOException ex) {
@@ -146,5 +167,21 @@ public final class AuthConfig {
 
     private static String plain(String message) {
         return message.replaceAll("<[^>]+>", "");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean mergeMissing(Map<String, Object> target, Map<String, Object> defaults) {
+        boolean changed = false;
+        for (var entry : defaults.entrySet()) {
+            Object existing = target.get(entry.getKey());
+            Object defaultValue = entry.getValue();
+            if (existing == null) {
+                target.put(entry.getKey(), defaultValue);
+                changed = true;
+            } else if (existing instanceof Map<?, ?> existingMap && defaultValue instanceof Map<?, ?> defaultMap) {
+                changed |= mergeMissing((Map<String, Object>) existingMap, (Map<String, Object>) defaultMap);
+            }
+        }
+        return changed;
     }
 }

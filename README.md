@@ -56,6 +56,17 @@ mvn -B -DskipTests clean package -Pbackend
 | `/l <password>` | Login alias |
 | `/register <password> <password>` | Create account |
 | `/reg <password> <password>` | Register alias |
+| `/logout` | Log out and lock backend access again |
+| `/changepass <old> <new>` | Change your password |
+| `/2fa enable` | Generate an authenticator secret |
+| `/2fa verify <code>` | Finish login when 2FA is required |
+| `/2fa disable <code>` | Disable authenticator 2FA |
+| `/zauth status` | Show authenticated count |
+| `/zauth unregister <player>` | Delete a user's login |
+| `/zauth setpassword <player> <password>` | Change a user's password |
+| `/zauth disable2fa <player>` | Remove a user's authenticator |
+| `/zauth forcelogin <player>` | Mark a user logged in |
+| `/zauth logout <player>` | Mark a user logged out |
 
 ## Proxy Config
 
@@ -65,6 +76,10 @@ The proxy config is intentionally small:
 general:
   login-timeout: 0
   register-timeout: 0
+
+prompts:
+  bossbar: true
+  actionbar-fallback: true
 
 database:
   type: sqlite
@@ -80,6 +95,8 @@ database:
 
 Set `login-timeout` or `register-timeout` to `0` to disable timeout kicks. Set `database.type` to `mysql`, `mariadb`, or `postgresql` to use the `external` block.
 
+Existing proxy configs auto-merge missing default keys on startup, so new options are added without wiping your values.
+
 ## Backend Config
 
 Backend config is deliberately tiny:
@@ -93,6 +110,9 @@ allowed-commands:
   - "/register"
   - "/l"
   - "/reg"
+  - "/2fa"
+  - "/totp"
+  - "/authenticator"
 ```
 
 The backend jar never connects to the database.

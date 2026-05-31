@@ -1,4 +1,5 @@
 # Auth proxy config
+config-version: 2
 
 general:
   prefix: "[Auth] "
@@ -7,6 +8,10 @@ general:
   # 0 disables the kick.
   login-timeout: 0
   register-timeout: 0
+
+prompts:
+  bossbar: true
+  actionbar-fallback: true
 
 # Optional waiting location for auth/lobby servers that use the legacy Paper auth jar.
 # The proxy/backend pair does not need this.
@@ -51,3 +56,9 @@ antibot:
 
 restrictions:
   enabled: false
+
+updates:
+  # Configs auto-merge missing keys on startup.
+  auto-update-config: true
+  # Binary self-updating is intentionally not automatic yet.
+  check-github-releases: false

@@ -1,6 +1,7 @@
 package xyz.zcraft.studio.auth.proxy.bungee;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -33,6 +34,10 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
         getProxy().getPluginManager().registerListener(this, this);
         getProxy().getPluginManager().registerCommand(this, new LoginCommand("login", "l"));
         getProxy().getPluginManager().registerCommand(this, new RegisterCommand("register", "reg"));
+        getProxy().getPluginManager().registerCommand(this, new LogoutCommand("logout", "lo"));
+        getProxy().getPluginManager().registerCommand(this, new ChangePassCommand("changepass", "changepassword", "cp"));
+        getProxy().getPluginManager().registerCommand(this, new TwoFactorCommand("2fa", "totp", "authenticator"));
+        getProxy().getPluginManager().registerCommand(this, new AdminCommand("zauth", "authadmin"));
         if (auth != null) {
             getLogger().info("Auth proxy loaded for BungeeCord.");
         }
@@ -139,8 +144,24 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
             }
 
             @Override
+            public void prompt(String message) {
+                player.sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.stripColor(message)));
+            }
+
+            @Override
+            public void clearPrompt() {
+                player.sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(""));
+            }
+
+            @Override
             public void disconnect(String message) {
+                clearPrompt();
                 player.disconnect(TextComponent.fromLegacyText(ChatColor.stripColor(message)));
+            }
+
+            @Override
+            public boolean hasPermission(String permission) {
+                return player.hasPermission(permission);
             }
         };
     }
@@ -190,6 +211,72 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
                 return;
             }
             service.register(view(player), args[0], args[1], BungeeAuthPlugin.this::sendState);
+        }
+    }
+
+    private final class LogoutCommand extends Command {
+        private LogoutCommand(String name, String... aliases) { super(name, null, aliases); }
+
+        @Override
+        public void execute(CommandSender sender, String[] args) {
+            if (sender instanceof ProxiedPlayer player) {
+                ProxyAuthService service = initializeAuth();
+                if (service != null) service.logout(view(player), BungeeAuthPlugin.this::sendState);
+            }
+        }
+    }
+
+    private final class ChangePassCommand extends Command {
+        private ChangePassCommand(String name, String... aliases) { super(name, null, aliases); }
+
+        @Override
+        public void execute(CommandSender sender, String[] args) {
+            if (!(sender instanceof ProxiedPlayer player)) return;
+            if (args.length < 2) {
+                player.sendMessage(TextComponent.fromLegacyText("Usage: /changepass <old> <new>"));
+                return;
+            }
+            ProxyAuthService service = initializeAuth();
+            if (service != null) service.changePassword(view(player), args[0], args[1]);
+        }
+    }
+
+    private final class TwoFactorCommand extends Command {
+        private TwoFactorCommand(String name, String... aliases) { super(name, null, aliases); }
+
+        @Override
+        public void execute(CommandSender sender, String[] args) {
+            if (!(sender instanceof ProxiedPlayer player)) return;
+            if (args.length < 1) {
+                player.sendMessage(TextComponent.fromLegacyText("Usage: /2fa <enable|disable|verify> [code]"));
+                return;
+            }
+            ProxyAuthService service = initializeAuth();
+            if (service == null) return;
+            String sub = args[0].toLowerCase();
+            if ("enable".equals(sub)) {
+                service.enable2fa(view(player));
+            } else if ("disable".equals(sub) && args.length >= 2) {
+                service.disable2fa(view(player), args[1]);
+            } else if ("verify".equals(sub) && args.length >= 2) {
+                service.verify2fa(view(player), args[1], BungeeAuthPlugin.this::sendState);
+            } else {
+                player.sendMessage(TextComponent.fromLegacyText("Usage: /2fa <enable|disable|verify> [code]"));
+            }
+        }
+    }
+
+    private final class AdminCommand extends Command {
+        private AdminCommand(String name, String... aliases) { super(name, "zcraftauth.admin", aliases); }
+
+        @Override
+        public void execute(CommandSender sender, String[] args) {
+            if (!(sender instanceof ProxiedPlayer player)) {
+                sender.sendMessage(TextComponent.fromLegacyText("Use /zauth in-game for now."));
+                return;
+            }
+            ProxyAuthService service = initializeAuth();
+            if (service != null) service.admin(view(player), args, BungeeAuthPlugin.this::sendState);
         }
     }
 }

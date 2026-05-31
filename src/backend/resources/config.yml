@@ -6,3 +6,6 @@ allowed-commands:
   - "/register"
   - "/l"
   - "/reg"
+  - "/2fa"
+  - "/totp"
+  - "/authenticator"
