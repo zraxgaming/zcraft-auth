@@ -1,6 +1,7 @@
 package xyz.zcraft.studio.auth;
 
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.zcraft.studio.auth.antibot.AntiBotManager;
 import xyz.zcraft.studio.auth.auth.AuthManager;
@@ -127,13 +128,13 @@ public final class ZCraftAuth extends JavaPlugin {
 
     private void initMetrics() {
         Metrics metrics = new Metrics(this, 31667);
-        metrics.addCustomChart(new Metrics.SimplePie("database_type",
+        metrics.addCustomChart(new SimplePie("database_type",
                 () -> database.getProviderType().toLowerCase(Locale.ROOT)));
-        metrics.addCustomChart(new Metrics.SimplePie("premium_auto_login",
+        metrics.addCustomChart(new SimplePie("premium_auto_login",
                 () -> configManager.isPremiumEnabled() ? "enabled" : "disabled"));
-        metrics.addCustomChart(new Metrics.SimplePie("session_restore",
+        metrics.addCustomChart(new SimplePie("session_restore",
                 () -> configManager.isSessionEnabled() ? "enabled" : "disabled"));
-        metrics.addCustomChart(new Metrics.SimplePie("two_factor",
+        metrics.addCustomChart(new SimplePie("two_factor",
                 () -> configManager.is2FAEnabled() ? "enabled" : "disabled"));
     }
 
