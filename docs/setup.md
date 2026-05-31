@@ -12,6 +12,8 @@ Install `Auth-Proxy-<version>.jar` on either Velocity or BungeeCord. This jar ow
 - Login/register timeout
 - Sending auth state to backend servers
 
+The proxy jar is the only jar that reads the main auth database. If the proxy cannot initialize the selected database, players are disconnected with an auth-not-ready message and the proxy console logs the config/database error.
+
 ## Backend Jar
 
 Install `Auth-Backend-<version>.jar` on every Paper/Purpur backend server. This jar owns:
@@ -21,6 +23,8 @@ Install `Auth-Backend-<version>.jar` on every Paper/Purpur backend server. This 
 - bStats metrics for the Bukkit/Paper side
 
 The backend jar does not connect to the database.
+
+Because the bStats project is registered as Bukkit/Paper, metrics run from this backend jar rather than from the proxy jar.
 
 ## Database
 

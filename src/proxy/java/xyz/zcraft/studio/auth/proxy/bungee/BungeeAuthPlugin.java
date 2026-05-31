@@ -29,12 +29,28 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
     @Override
     public void onEnable() {
         getProxy().registerChannel(AuthStateMessages.CHANNEL);
-        InputStream defaults = getClass().getClassLoader().getResourceAsStream("config.yml");
-        auth = new ProxyAuthService(new AuthConfig(getDataFolder().toPath(), defaults));
+        initializeAuth();
         getProxy().getPluginManager().registerListener(this, this);
         getProxy().getPluginManager().registerCommand(this, new LoginCommand("login", "l"));
         getProxy().getPluginManager().registerCommand(this, new RegisterCommand("register", "reg"));
-        getLogger().info("Auth proxy loaded for BungeeCord.");
+        if (auth != null) {
+            getLogger().info("Auth proxy loaded for BungeeCord.");
+        }
+    }
+
+    private synchronized ProxyAuthService initializeAuth() {
+        if (auth != null) {
+            return auth;
+        }
+        InputStream defaults = getClass().getClassLoader().getResourceAsStream("config.yml");
+        try {
+            auth = new ProxyAuthService(new AuthConfig(getDataFolder().toPath(), defaults));
+            return auth;
+        } catch (Exception ex) {
+            getLogger().severe("Auth proxy failed to initialize. Check config.yml and database settings.");
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -47,17 +63,28 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
 
     @EventHandler
     public void onPostLogin(PostLoginEvent event) {
-        auth.handleJoin(view(event.getPlayer()), this::sendState);
+        ProxyAuthService service = initializeAuth();
+        if (service == null) {
+            event.getPlayer().disconnect(TextComponent.fromLegacyText("Auth is not ready. Please try again later."));
+            return;
+        }
+        service.handleJoin(view(event.getPlayer()), this::sendState);
     }
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        auth.handleDisconnect(event.getPlayer().getUniqueId());
+        ProxyAuthService service = auth;
+        if (service != null) {
+            service.handleDisconnect(event.getPlayer().getUniqueId());
+        }
     }
 
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
-        sendState(event.getPlayer().getUniqueId(), auth.isAuthenticated(event.getPlayer().getUniqueId()));
+        ProxyAuthService service = initializeAuth();
+        if (service != null) {
+            sendState(event.getPlayer().getUniqueId(), service.isAuthenticated(event.getPlayer().getUniqueId()));
+        }
     }
 
     @EventHandler
@@ -72,8 +99,9 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(event.getData()))) {
             String action = in.readUTF();
             UUID uuid = UUID.fromString(in.readUTF());
-            if (AuthStateMessages.BACKEND_HELLO.equals(action) && player.getUniqueId().equals(uuid)) {
-                sendState(uuid, auth.isAuthenticated(uuid));
+            ProxyAuthService service = initializeAuth();
+            if (AuthStateMessages.BACKEND_HELLO.equals(action) && player.getUniqueId().equals(uuid) && service != null) {
+                sendState(uuid, service.isAuthenticated(uuid));
             }
         } catch (Exception ex) {
             getLogger().warning("Ignored invalid backend auth message: " + ex.getMessage());
@@ -132,7 +160,12 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
                 player.sendMessage(TextComponent.fromLegacyText("Usage: /login <password>"));
                 return;
             }
-            auth.login(view(player), args[0], BungeeAuthPlugin.this::sendState);
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                player.disconnect(TextComponent.fromLegacyText("Auth is not ready. Please try again later."));
+                return;
+            }
+            service.login(view(player), args[0], BungeeAuthPlugin.this::sendState);
         }
     }
 
@@ -151,7 +184,12 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
                 player.sendMessage(TextComponent.fromLegacyText("Usage: /register <password> <password>"));
                 return;
             }
-            auth.register(view(player), args[0], args[1], BungeeAuthPlugin.this::sendState);
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                player.disconnect(TextComponent.fromLegacyText("Auth is not ready. Please try again later."));
+                return;
+            }
+            service.register(view(player), args[0], args[1], BungeeAuthPlugin.this::sendState);
         }
     }
 }

@@ -13,6 +13,7 @@ GitHub Actions builds two jars:
 - `Auth-Proxy-<version>.jar`
   - Put this on Velocity or BungeeCord.
   - Owns `/login`, `/register`, passwords, auth state, and the database.
+  - If the database/config cannot load, players are cleanly disconnected instead of causing event errors.
 - `Auth-Backend-<version>.jar`
   - Put this on every backend Paper/Purpur server.
   - No database and no heavy auth logic.

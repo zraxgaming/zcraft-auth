@@ -69,6 +69,12 @@
             <version>3.0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-base</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- Argon2 -->
         <dependency>
             <groupId>de.mkammerer</groupId>
@@ -336,6 +342,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.bstats:bstats-bukkit</include>
+                                    <include>org.bstats:bstats-base</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

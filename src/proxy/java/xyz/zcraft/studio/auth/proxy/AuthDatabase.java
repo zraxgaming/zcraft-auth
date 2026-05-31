@@ -24,6 +24,7 @@ public final class AuthDatabase implements AutoCloseable {
 
     public synchronized void initialize() {
         try {
+            loadDriver();
             connection = config.databaseType().equals("sqlite")
                     ? DriverManager.getConnection(jdbcUrl())
                     : DriverManager.getConnection(jdbcUrl(), config.externalUsername(), config.externalPassword());
@@ -119,6 +120,20 @@ public final class AuthDatabase implements AutoCloseable {
                 yield "jdbc:sqlite:" + file.toAbsolutePath();
             }
         };
+    }
+
+    private void loadDriver() {
+        String driver = switch (config.databaseType()) {
+            case "mysql" -> "com.mysql.cj.jdbc.Driver";
+            case "mariadb" -> "org.mariadb.jdbc.Driver";
+            case "postgresql" -> "org.postgresql.Driver";
+            default -> "org.sqlite.JDBC";
+        };
+        try {
+            Class.forName(driver);
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException("Missing JDBC driver: " + driver, ex);
+        }
     }
 
     private void createTable() throws SQLException {

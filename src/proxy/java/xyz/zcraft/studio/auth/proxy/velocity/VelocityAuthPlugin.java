@@ -42,6 +42,7 @@ public final class VelocityAuthPlugin {
     private final MinecraftChannelIdentifier channel =
             MinecraftChannelIdentifier.from(AuthStateMessages.CHANNEL);
     private ProxyAuthService auth;
+    private boolean channelRegistered;
 
     @Inject
     public VelocityAuthPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -52,11 +53,29 @@ public final class VelocityAuthPlugin {
 
     @Subscribe
     public void onProxyInitialize(ProxyInitializeEvent event) {
-        server.getChannelRegistrar().register(channel);
+        initializeAuth();
+        if (auth != null) {
+            registerCommands();
+            logger.info("Auth proxy loaded for Velocity.");
+        }
+    }
+
+    private synchronized ProxyAuthService initializeAuth() {
+        if (auth != null) {
+            return auth;
+        }
+        if (!channelRegistered) {
+            server.getChannelRegistrar().register(channel);
+            channelRegistered = true;
+        }
         InputStream defaults = getClass().getClassLoader().getResourceAsStream("config.yml");
-        auth = new ProxyAuthService(new AuthConfig(dataDirectory, defaults));
-        registerCommands();
-        logger.info("Auth proxy loaded for Velocity.");
+        try {
+            auth = new ProxyAuthService(new AuthConfig(dataDirectory, defaults));
+            return auth;
+        } catch (Exception ex) {
+            logger.error("Auth proxy failed to initialize. Check config.yml and database settings.", ex);
+            return null;
+        }
     }
 
     @Subscribe
@@ -68,17 +87,28 @@ public final class VelocityAuthPlugin {
 
     @Subscribe
     public void onPostLogin(com.velocitypowered.api.event.connection.PostLoginEvent event) {
-        auth.handleJoin(view(event.getPlayer()), this::sendState);
+        ProxyAuthService service = initializeAuth();
+        if (service == null) {
+            event.getPlayer().disconnect(Component.text("Auth is not ready. Please try again later."));
+            return;
+        }
+        service.handleJoin(view(event.getPlayer()), this::sendState);
     }
 
     @Subscribe
     public void onDisconnect(DisconnectEvent event) {
-        auth.handleDisconnect(event.getPlayer().getUniqueId());
+        ProxyAuthService service = auth;
+        if (service != null) {
+            service.handleDisconnect(event.getPlayer().getUniqueId());
+        }
     }
 
     @Subscribe
     public void onServerConnected(ServerConnectedEvent event) {
-        sendState(event.getPlayer().getUniqueId(), auth.isAuthenticated(event.getPlayer().getUniqueId()));
+        ProxyAuthService service = initializeAuth();
+        if (service != null) {
+            sendState(event.getPlayer().getUniqueId(), service.isAuthenticated(event.getPlayer().getUniqueId()));
+        }
     }
 
     @Subscribe
@@ -93,9 +123,11 @@ public final class VelocityAuthPlugin {
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(event.getData()))) {
             String action = in.readUTF();
             UUID uuid = UUID.fromString(in.readUTF());
+            ProxyAuthService service = initializeAuth();
             if (AuthStateMessages.BACKEND_HELLO.equals(action)
-                    && connection.getPlayer().getUniqueId().equals(uuid)) {
-                sendState(uuid, auth.isAuthenticated(uuid));
+                    && connection.getPlayer().getUniqueId().equals(uuid)
+                    && service != null) {
+                sendState(uuid, service.isAuthenticated(uuid));
             }
         } catch (Exception ex) {
             logger.warn("Ignored invalid backend auth message: {}", ex.getMessage());
@@ -156,7 +188,12 @@ public final class VelocityAuthPlugin {
                 player.sendMessage(Component.text("Usage: /login <password>"));
                 return;
             }
-            auth.login(view(player), invocation.arguments()[0], VelocityAuthPlugin.this::sendState);
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                player.disconnect(Component.text("Auth is not ready. Please try again later."));
+                return;
+            }
+            service.login(view(player), invocation.arguments()[0], VelocityAuthPlugin.this::sendState);
         }
     }
 
@@ -171,7 +208,12 @@ public final class VelocityAuthPlugin {
                 player.sendMessage(Component.text("Usage: /register <password> <password>"));
                 return;
             }
-            auth.register(view(player), invocation.arguments()[0], invocation.arguments()[1],
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                player.disconnect(Component.text("Auth is not ready. Please try again later."));
+                return;
+            }
+            service.register(view(player), invocation.arguments()[0], invocation.arguments()[1],
                     VelocityAuthPlugin.this::sendState);
         }
     }
