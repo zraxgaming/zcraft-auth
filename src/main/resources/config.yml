@@ -13,6 +13,9 @@ prompts:
   bossbar: true
   actionbar-fallback: true
 
+session:
+  enabled: true
+
 # Optional waiting location for auth/lobby servers that use the legacy Paper auth jar.
 # The proxy/backend pair does not need this.
 location:

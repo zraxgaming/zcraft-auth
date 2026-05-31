@@ -1,8 +1,7 @@
 name: AuthBackend
 version: '1.0.0'
 main: xyz.zcraft.studio.auth.backend.BackendAuthPlugin
-api-version: '1.21'
-description: "Small backend auth guard for Paper/Purpur servers behind Auth proxy."
+description: "Small backend auth guard for Spigot/Paper/Purpur/Folia servers behind Auth proxy."
 
 permissions:
   zcraftauth.backend.bypass:

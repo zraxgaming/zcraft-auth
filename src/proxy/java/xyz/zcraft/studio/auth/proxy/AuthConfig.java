@@ -105,6 +105,10 @@ public final class AuthConfig {
         return integer("general.register-timeout", 0);
     }
 
+    public boolean sessionEnabled() {
+        return bool("session.enabled", true);
+    }
+
     public int minPasswordLength() {
         return integer("password.min-length", 5);
     }

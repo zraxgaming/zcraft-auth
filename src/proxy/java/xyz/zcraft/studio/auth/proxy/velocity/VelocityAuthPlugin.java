@@ -310,12 +310,25 @@ public final class VelocityAuthPlugin {
     private final class AdminCommand implements SimpleCommand {
         @Override
         public void execute(Invocation invocation) {
-            if (!(invocation.source() instanceof Player player)) {
-                invocation.source().sendMessage(Component.text("Use /zauth in-game for now."));
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                invocation.source().sendMessage(Component.text("Auth is not ready."));
                 return;
             }
-            ProxyAuthService service = initializeAuth();
-            if (service != null) service.admin(view(player), invocation.arguments(), VelocityAuthPlugin.this::sendState);
+            ProxyAuthService.AdminView admin = invocation.source() instanceof Player player
+                    ? view(player)
+                    : new ProxyAuthService.AdminView() {
+                @Override
+                public void message(String message) {
+                    invocation.source().sendMessage(Component.text(message));
+                }
+
+                @Override
+                public boolean hasPermission(String permission) {
+                    return true;
+                }
+            };
+            service.admin(admin, invocation.arguments(), VelocityAuthPlugin.this::sendState);
         }
     }
 }

@@ -31,11 +31,18 @@ jobs:
           mkdir -p artifacts
           cp target/Auth-Proxy-*.jar artifacts/
 
-      - name: Build backend plugin
-        run: mvn -B -DskipTests clean package -Pbackend
-
-      - name: Keep backend artifact
-        run: cp target/Auth-Backend-*.jar artifacts/
+      - name: Build backend plugin variants
+        shell: bash
+        run: |
+          for name in \
+            Auth-Backend-SpigotLegacy \
+            Auth-Backend-Spigot \
+            Auth-Backend-Paper \
+            Auth-Backend-Folia
+          do
+            mvn -B -DskipTests clean package -Pbackend -Dbackend.finalName="$name-1.0.0"
+            cp target/"$name-1.0.0".jar artifacts/
+          done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -1,6 +1,5 @@
 package xyz.zcraft.studio.auth.backend;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,7 +41,7 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getMessenger().registerIncomingPluginChannel(this, CHANNEL, this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, CHANNEL);
-        new Metrics(this, 31668);
+        new Metrics(this, 31667);
         getLogger().info("Backend auth guard enabled.");
     }
 
@@ -81,7 +80,7 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         authenticated.remove(player.getUniqueId());
-        getServer().getScheduler().runTaskLater(this, () -> requestState(player), 2L);
+        requestState(player);
     }
 
     @EventHandler
@@ -103,13 +102,6 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
-        if (!isAllowed(event.getPlayer()) && !getConfig().getBoolean("allow-chat", false)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPaperChat(AsyncChatEvent event) {
         if (!isAllowed(event.getPlayer()) && !getConfig().getBoolean("allow-chat", false)) {
             event.setCancelled(true);
         }

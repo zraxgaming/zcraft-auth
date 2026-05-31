@@ -271,12 +271,25 @@ public final class BungeeAuthPlugin extends Plugin implements Listener {
 
         @Override
         public void execute(CommandSender sender, String[] args) {
-            if (!(sender instanceof ProxiedPlayer player)) {
-                sender.sendMessage(TextComponent.fromLegacyText("Use /zauth in-game for now."));
+            ProxyAuthService service = initializeAuth();
+            if (service == null) {
+                sender.sendMessage(TextComponent.fromLegacyText("Auth is not ready."));
                 return;
             }
-            ProxyAuthService service = initializeAuth();
-            if (service != null) service.admin(view(player), args, BungeeAuthPlugin.this::sendState);
+            ProxyAuthService.AdminView admin = sender instanceof ProxiedPlayer player
+                    ? view(player)
+                    : new ProxyAuthService.AdminView() {
+                @Override
+                public void message(String message) {
+                    sender.sendMessage(TextComponent.fromLegacyText(message));
+                }
+
+                @Override
+                public boolean hasPermission(String permission) {
+                    return true;
+                }
+            };
+            service.admin(admin, args, BungeeAuthPlugin.this::sendState);
         }
     }
 }

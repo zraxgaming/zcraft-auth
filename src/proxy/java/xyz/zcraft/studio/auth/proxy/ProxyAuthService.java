@@ -33,8 +33,13 @@ public final class ProxyAuthService implements AutoCloseable {
         sender.sendState(player.uuid(), false);
         CompletableFuture.runAsync(() -> {
             try {
-                boolean registered = database.exists(player.uuid());
-                if (registered) {
+                var account = database.find(player.uuid());
+                if (account.isPresent()) {
+                    if (config.sessionEnabled() && player.ip().equals(account.get().lastIp())) {
+                        completeLogin(player, sender);
+                        player.message(config.prefix() + "Session restored.");
+                        return;
+                    }
                     player.message(config.prefix() + "Please login with /login <password>");
                     player.prompt("Login required: /login <password>");
                     startTimeout(player, sender, config.loginTimeoutSeconds());
@@ -174,7 +179,7 @@ public final class ProxyAuthService implements AutoCloseable {
         player.message(config.prefix() + "Logged out.");
     }
 
-    public void admin(PlayerView admin, String[] args, StateSender sender) {
+    public void admin(AdminView admin, String[] args, StateSender sender) {
         CompletableFuture.runAsync(() -> {
             if (!admin.hasPermission("zcraftauth.admin")) {
                 admin.message(config.prefix() + "No permission.");
@@ -297,14 +302,18 @@ public final class ProxyAuthService implements AutoCloseable {
         return account.totpSecret() != null && !account.totpSecret().isBlank();
     }
 
-    public interface PlayerView {
+    public interface AdminView {
+        void message(String message);
+
+        boolean hasPermission(String permission);
+    }
+
+    public interface PlayerView extends AdminView {
         UUID uuid();
 
         String username();
 
         String ip();
-
-        void message(String message);
 
         void prompt(String message);
 
@@ -312,7 +321,6 @@ public final class ProxyAuthService implements AutoCloseable {
 
         void disconnect(String message);
 
-        boolean hasPermission(String permission);
     }
 
     public interface StateSender {

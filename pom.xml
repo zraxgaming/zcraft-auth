@@ -17,6 +17,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <shade.skip>false</shade.skip>
+        <backend.finalName>Auth-Backend-${project.version}</backend.finalName>
     </properties>
 
     <repositories>
@@ -314,7 +315,7 @@
                         <directory>src/backend/resources</directory>
                     </resource>
                 </resources>
-                <finalName>Auth-Backend-${project.version}</finalName>
+                <finalName>${backend.finalName}</finalName>
                 <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>

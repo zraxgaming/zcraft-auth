@@ -7,7 +7,7 @@
 Auth is now a two-plugin proxy authentication system:
 
 - `Auth-Proxy` runs on Velocity or BungeeCord and owns authentication.
-- `Auth-Backend` runs on Paper/Purpur backend servers and only guards players until the proxy says they are logged in.
+- `Auth-Backend` runs on Spigot/Paper/Purpur/Folia backend servers and only guards players until the proxy says they are logged in.
 
 The backend and proxy automatically talk over the `zcraftauth:state` plugin message channel. Backend servers do not need database settings.
 
@@ -17,7 +17,7 @@ The backend and proxy automatically talk over the `zcraftauth:state` plugin mess
 | --- | --- |
 | `src/proxy/java` | Velocity/Bungee auth plugin source |
 | `src/proxy/resources` | Proxy plugin descriptors |
-| `src/backend/java` | Small Paper/Purpur backend guard |
+| `src/backend/java` | Small Spigot/Paper/Purpur/Folia backend guard |
 | `src/backend/resources` | Backend `plugin.yml` and tiny backend config |
 | `src/main/resources/config.yml` | Default proxy auth config |
 | `docs/setup.md` | Install and operation notes |
@@ -26,24 +26,27 @@ The older `src/main/java` Paper auth code is kept for compatibility/reference wh
 
 ## Builds
 
-GitHub Actions builds and uploads two jars:
+GitHub Actions builds and uploads one proxy jar plus dedicated backend jars:
 
 | Artifact | Install Location | Responsibilities |
 | --- | --- | --- |
 | `Auth-Proxy-<version>.jar` | Velocity or BungeeCord `plugins/` | `/login`, `/register`, passwords, database, auth state |
-| `Auth-Backend-<version>.jar` | Every Paper/Purpur backend `plugins/` | Movement/chat/command guard, proxy state handshake, bStats |
+| `Auth-Backend-SpigotLegacy-<version>.jar` | Spigot-style 1.16-1.19 backend `plugins/` | Movement/chat/command guard, proxy state handshake, bStats |
+| `Auth-Backend-Spigot-<version>.jar` | Spigot-style 1.20-1.21 backend `plugins/` | Movement/chat/command guard, proxy state handshake, bStats |
+| `Auth-Backend-Paper-<version>.jar` | Paper/Purpur 1.21+ backend `plugins/` | Movement/chat/command guard, proxy state handshake, bStats |
+| `Auth-Backend-Folia-<version>.jar` | Folia 1.21+ backend `plugins/` | Movement/chat/command guard, proxy state handshake, bStats |
 
 Manual profile commands:
 
 ```bash
 mvn -B -DskipTests clean package -Pproxy
-mvn -B -DskipTests clean package -Pbackend
+mvn -B -DskipTests clean package -Pbackend -Dbackend.finalName=Auth-Backend-Paper-1.0.0
 ```
 
 ## Install
 
 1. Install `Auth-Proxy-*.jar` on the proxy.
-2. Install `Auth-Backend-*.jar` on every backend server.
+2. Install the backend jar that matches each backend server family.
 3. Start the proxy once to generate `config.yml`.
 4. Edit only the proxy config if you want MySQL, MariaDB, or PostgreSQL instead of SQLite.
 5. Restart the proxy and backend servers.
@@ -80,6 +83,9 @@ general:
 prompts:
   bossbar: true
   actionbar-fallback: true
+
+session:
+  enabled: true
 
 database:
   type: sqlite
@@ -122,8 +128,8 @@ Bypass is disabled by default, even for operators. Set `enable-bypass-permission
 
 - Java 21 is required.
 - Velocity and BungeeCord are supported by the same proxy jar.
-- Paper and Purpur 1.21.x are the intended backend targets.
-- bStats runs from the backend plugin because the project is registered for Bukkit/Paper.
+- Dedicated backend jars are produced for Spigot legacy, Spigot modern, Paper/Purpur, and Folia families.
+- bStats runs from the backend plugin because the project is registered for Bukkit/Paper. Project id: `31667`.
 - Same-IP player limits are disabled by default.
 
 ## License

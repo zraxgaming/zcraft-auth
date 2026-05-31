@@ -7,7 +7,10 @@ This project builds two different plugin jars from one repository.
 | Jar | Server Type | Required? |
 | --- | --- | --- |
 | `Auth-Proxy-<version>.jar` | Velocity or BungeeCord | Yes, once per network |
-| `Auth-Backend-<version>.jar` | Paper/Purpur backend servers | Yes, on every protected backend |
+| `Auth-Backend-SpigotLegacy-<version>.jar` | Spigot-style 1.16-1.19 | Use for legacy Spigot-style backends |
+| `Auth-Backend-Spigot-<version>.jar` | Spigot-style 1.20-1.21 | Use for modern Spigot-style backends |
+| `Auth-Backend-Paper-<version>.jar` | Paper/Purpur 1.21+ | Use for Paper/Purpur |
+| `Auth-Backend-Folia-<version>.jar` | Folia 1.21+ | Use for Folia |
 
 Do not install the backend jar on the proxy. Do not install the proxy jar on backend servers.
 
@@ -31,6 +34,7 @@ The proxy jar handles:
 - `/logout`, `/changepass`
 - `/2fa enable|verify|disable`
 - `/zauth` admin actions
+- Session login by matching the last known IP
 - Password hashing
 - Authenticator 2FA
 - SQLite/MySQL/MariaDB/PostgreSQL storage
@@ -51,6 +55,7 @@ The backend jar handles:
 - Running bStats for the Bukkit/Paper side
 
 The backend jar is intentionally small and does not touch the auth database.
+bStats uses project id `31667`.
 
 ## Maven Profiles
 
@@ -58,13 +63,13 @@ GitHub Actions uses these profiles:
 
 ```bash
 mvn -B -DskipTests clean package -Pproxy
-mvn -B -DskipTests clean package -Pbackend
+mvn -B -DskipTests clean package -Pbackend -Dbackend.finalName=Auth-Backend-Paper-1.0.0
 ```
 
 Outputs:
 
 - `target/Auth-Proxy-<version>.jar`
-- `target/Auth-Backend-<version>.jar`
+- `target/Auth-Backend-*-<version>.jar`
 
 ## Database
 
@@ -145,3 +150,28 @@ The proxy config loader merges missing keys from the bundled default config into
 Binary self-updating is not automatic yet; use GitHub Actions release artifacts for jar updates.
 
 Operators are not bypassed by default. If you turn on `enable-bypass-permission`, only players with `zcraftauth.backend.bypass` can skip backend protection.
+
+## Feature Status
+
+Implemented in the active proxy/backend system:
+
+- Native Velocity and Bungee proxy jar
+- Dedicated backend guard jars for Spigot legacy, Spigot modern, Paper/Purpur, and Folia families
+- SQLite, MySQL, MariaDB, and PostgreSQL storage
+- BCrypt passwords
+- Authenticator 2FA
+- Session login
+- Console and in-game `/zauth` admin actions
+- Backend movement/chat/command/inventory/damage protection
+- Config auto-merge on update
+
+Not yet ported from the older Paper auth code into the proxy-first system:
+
+- E-mail recovery and confirmation
+- Country whitelist/blacklist
+- Built-in proxy AntiBot
+- Premium Mojang bypass
+- Custom external table/column mapping
+- Legacy hash import/migration formats
+- Editable per-language message packs
+- Automatic database backups and account importers
