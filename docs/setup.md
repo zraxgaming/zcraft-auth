@@ -109,9 +109,12 @@ Backend config is local to each backend server:
 ```yml
 block-movement: true
 allow-chat: false
+enable-bypass-permission: false
 allowed-commands:
   - "/login"
   - "/register"
   - "/l"
   - "/reg"
 ```
+
+Operators are not bypassed by default. If you turn on `enable-bypass-permission`, only players with `zcraftauth.backend.bypass` can skip backend protection.

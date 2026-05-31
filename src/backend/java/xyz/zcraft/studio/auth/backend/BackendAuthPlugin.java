@@ -1,13 +1,19 @@
 package xyz.zcraft.studio.auth.backend;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -103,6 +109,13 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPaperChat(AsyncChatEvent event) {
+        if (!isAllowed(event.getPlayer()) && !getConfig().getBoolean("allow-chat", false)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         if (isAllowed(event.getPlayer())) {
             return;
@@ -124,8 +137,49 @@ public final class BackendAuthPlugin extends JavaPlugin implements Listener, Plu
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getWhoClicked() instanceof Player player && !isAllowed(player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDrop(PlayerDropItemEvent event) {
+        if (!isAllowed(event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPickup(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player player && !isAllowed(player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player && !isAllowed(player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player && !isAllowed(player)) {
+            event.setCancelled(true);
+            return;
+        }
+        if (event.getEntity() instanceof Player player && !isAllowed(player)) {
+            event.setCancelled(true);
+        }
+    }
+
     private boolean isAllowed(Player player) {
-        return authenticated.contains(player.getUniqueId()) || player.hasPermission("zcraftauth.backend.bypass");
+        return authenticated.contains(player.getUniqueId())
+                || (getConfig().getBoolean("enable-bypass-permission", false)
+                && player.hasPermission("zcraftauth.backend.bypass"));
     }
 
     private void requestState(Player player) {

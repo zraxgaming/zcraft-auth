@@ -1,5 +1,6 @@
 block-movement: true
 allow-chat: false
+enable-bypass-permission: false
 allowed-commands:
   - "/login"
   - "/register"

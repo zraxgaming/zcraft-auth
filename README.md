@@ -87,6 +87,7 @@ Backend config is deliberately tiny:
 ```yml
 block-movement: true
 allow-chat: false
+enable-bypass-permission: false
 allowed-commands:
   - "/login"
   - "/register"
@@ -95,6 +96,7 @@ allowed-commands:
 ```
 
 The backend jar never connects to the database.
+Bypass is disabled by default, even for operators. Set `enable-bypass-permission: true` only if you intentionally want `zcraftauth.backend.bypass` to skip backend protection.
 
 ## Notes
 

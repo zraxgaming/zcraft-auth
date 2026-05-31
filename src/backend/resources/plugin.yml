@@ -7,4 +7,4 @@ description: "Small backend auth guard for Paper/Purpur servers behind Auth prox
 permissions:
   zcraftauth.backend.bypass:
     description: Bypass backend auth guard
-    default: op
+    default: false
