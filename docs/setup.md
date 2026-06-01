@@ -2,6 +2,8 @@
 
 This project builds two different plugin jars from one repository.
 
+*you need to downlaod the proxy AND backend plugins to make this work perfectly fine
+
 ## Which Jar Goes Where
 
 | Jar | Server Type | Required? |
