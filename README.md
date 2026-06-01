@@ -3,6 +3,8 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/zraxgaming/zcraft-auth/build.yml?branch=main&label=build)](https://github.com/zraxgaming/zcraft-auth/actions)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00)](https://adoptium.net/)
 [![License](https://img.shields.io/github/license/zraxgaming/zcraft-auth)](LICENSE)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue?logo=paypal)](https://www.paypal.com/ncp/payment/ZXN242B97VA24)
+
 
 Auth is now a two-plugin proxy authentication system:
 
