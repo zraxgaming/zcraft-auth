@@ -36,6 +36,7 @@ public class AuthManager {
     private final Map<UUID, Long> attemptBans = new ConcurrentHashMap<>();
     private final Map<UUID, Location> savedLocations = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> timeoutTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> promptTasks = new ConcurrentHashMap<>();
     private final Map<UUID, BossBar> bossBars = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastAttempt = new ConcurrentHashMap<>();
 
@@ -57,8 +58,25 @@ public class AuthManager {
 
     private void handleJoin(Player player, String ip, Optional<PlayerData> opt) {
         if (opt.isEmpty()) {
+            if (plugin.getConfigManager().isPremiumEnabled()) {
+                plugin.getPremiumChecker().checkPremium(player.getName()).thenAccept(result ->
+                        plugin.runSync(() -> {
+                            if (!player.isOnline()) {
+                                return;
+                            }
+                            if (result.premium()) {
+                                autoRegisterPremium(player, ip);
+                            } else {
+                                placeLimbo(player);
+                                beginPrompt(player, false);
+                                startTimeout(player, false);
+                            }
+                        })
+                );
+                return;
+            }
             placeLimbo(player);
-            showRegisterPrompt(player);
+            beginPrompt(player, false);
             startTimeout(player, false);
             return;
         }
@@ -82,11 +100,14 @@ public class AuthManager {
         if (plugin.getConfigManager().isPremiumEnabled() && data.premium()) {
             plugin.getPremiumChecker().checkPremium(player.getName()).thenAccept(result ->
                     plugin.runSync(() -> {
+                        if (!player.isOnline()) {
+                            return;
+                        }
                         if (result.premium()) {
                             completeLogin(player, data, PlayerAuthEvent.AuthMethod.PREMIUM);
                         } else {
                             placeLimbo(player);
-                            showLoginPrompt(player);
+                            beginPrompt(player, true);
                             startTimeout(player, true);
                         }
                     })
@@ -95,8 +116,25 @@ public class AuthManager {
         }
 
         placeLimbo(player);
-        showLoginPrompt(player);
+        beginPrompt(player, true);
         startTimeout(player, true);
+    }
+
+    private void autoRegisterPremium(Player player, String ip) {
+        PlayerData data = PlayerData.builder(player.getUniqueId(), player.getName())
+                .lastIp(ip)
+                .lastLogin(Instant.now())
+                .premium(true)
+                .build();
+
+        plugin.getDatabase().savePlayer(data).thenRun(() -> {
+            plugin.getDiscordLogger().logRegister(player.getName(), ip);
+            plugin.runSync(() -> {
+                if (player.isOnline()) {
+                    completeLogin(player, data, PlayerAuthEvent.AuthMethod.PREMIUM);
+                }
+            });
+        });
     }
 
     public CompletableFuture<LoginResult> attemptLoginAsync(Player player, String password) {
@@ -258,6 +296,7 @@ public class AuthManager {
         UUID uuid = player.getUniqueId();
         authenticated.add(uuid);
         pending2FA.remove(uuid);
+        cancelPrompt(uuid);
         cancelTimeout(uuid);
         removeBossBar(uuid);
 
@@ -281,14 +320,16 @@ public class AuthManager {
 
         LanguageManager lang = plugin.getLanguageManager();
         Component msg = switch (method) {
-            case SESSION -> MM.deserialize(lang.get(player, "session.restored",
+            case SESSION -> messageOrEmpty(lang.get(player, "session.restored",
                     Map.of("player", player.getName())));
-            case PREMIUM -> MM.deserialize(lang.get(player, "premium.auto-login"));
-            case FORCE -> MM.deserialize(lang.get(player, "forcelogin.player-notified"));
-            default -> MM.deserialize(lang.get(player, "login.success",
+            case PREMIUM -> messageOrEmpty(lang.get(player, "premium.auto-login"));
+            case FORCE -> messageOrEmpty(lang.get(player, "forcelogin.player-notified"));
+            default -> messageOrEmpty(lang.get(player, "login.success",
                     Map.of("player", player.getName())));
         };
-        player.sendMessage(msg);
+        if (!msg.equals(Component.empty())) {
+            player.sendMessage(msg);
+        }
 
         plugin.getServer().getOnlinePlayers().forEach(p -> {
             p.showPlayer(plugin, player);
@@ -306,6 +347,7 @@ public class AuthManager {
         plugin.getSessionManager().invalidateSession(uuid);
         savedLocations.remove(uuid);
         cancelTimeout(uuid);
+        cancelPrompt(uuid);
         removeBossBar(uuid);
         plugin.getServer().getPluginManager().callEvent(
                 new PlayerLogoutEvent(player, PlayerLogoutEvent.LogoutReason.COMMAND));
@@ -319,6 +361,7 @@ public class AuthManager {
         attempts.remove(uuid);
         lastAttempt.remove(uuid);
         cancelTimeout(uuid);
+        cancelPrompt(uuid);
         removeBossBar(uuid);
         savedLocations.remove(uuid);
         if (wasAuthed) {
@@ -330,6 +373,7 @@ public class AuthManager {
     public void onShutdown() {
         plugin.getServer().getOnlinePlayers().forEach(p -> {
             BossBar bar = bossBars.remove(p.getUniqueId());
+            cancelPrompt(p.getUniqueId());
             if (bar != null) {
                 p.hideBossBar(bar);
             }
@@ -371,6 +415,27 @@ public class AuthManager {
         }
     }
 
+    private void beginPrompt(Player player, boolean login) {
+        UUID uuid = player.getUniqueId();
+        cancelPrompt(uuid);
+
+        int repeatTaskId = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!player.isOnline() || isAuthenticated(player)) {
+                    cancelPrompt(uuid);
+                    return;
+                }
+                if (login) {
+                    showLoginPrompt(player);
+                } else {
+                    showRegisterPrompt(player);
+                }
+            }
+        }.runTaskTimer(plugin, 10L, 100L).getTaskId();
+        promptTasks.put(uuid, repeatTaskId);
+    }
+
     private void showLoginPrompt(Player player) {
         var lang = plugin.getLanguageManager();
         if (plugin.getConfigManager().isTitlePromptEnabled()) {
@@ -396,9 +461,10 @@ public class AuthManager {
     }
 
     private void showBossBar(Player player, String message) {
-        if (!plugin.getConfigManager().isBossBarEnabled()) {
+        if (!plugin.getConfigManager().isBossBarEnabled() || message == null || message.isBlank()) {
             return;
         }
+        removeBossBar(player.getUniqueId());
 
         BossBar.Color color;
         try {
@@ -446,6 +512,17 @@ public class AuthManager {
         if (taskId != null) {
             plugin.getServer().getScheduler().cancelTask(taskId);
         }
+    }
+
+    private void cancelPrompt(UUID uuid) {
+        Integer taskId = promptTasks.remove(uuid);
+        if (taskId != null) {
+            plugin.getServer().getScheduler().cancelTask(taskId);
+        }
+    }
+
+    private Component messageOrEmpty(String raw) {
+        return raw == null || raw.isBlank() ? Component.empty() : MM.deserialize(raw);
     }
 
     public String getIP(Player player) {

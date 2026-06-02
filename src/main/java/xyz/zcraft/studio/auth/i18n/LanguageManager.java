@@ -12,18 +12,21 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Resolves messages in the player's own Minecraft client language,
- * falling back to the server's configured default language, then to English.
+ * Resolves messages from messages.yml first, then optional locale files.
  *
- * Language files live in plugins/Auth/lang/<locale>.yml
- * Bundled languages are extracted on first run.
+ * Server owners can customize every user-facing message in plugins/Auth/messages.yml.
+ * Bundled language files remain available for optional locale fallback.
  */
 public class LanguageManager {
 
     private static final String[] BUNDLED_LANGS = {"en", "ar"};
+    private static final String MESSAGES_FILE = "messages.yml";
 
     private final ZCraftAuth plugin;
     private final File langDir;
+    private final File messagesFile;
+    private FileConfiguration messages;
+    private FileConfiguration bundledMessages;
 
     // locale -> parsed config
     private final Map<String, FileConfiguration> langs = new HashMap<>();
@@ -43,13 +46,16 @@ public class LanguageManager {
     public LanguageManager(ZCraftAuth plugin) {
         this.plugin  = plugin;
         this.langDir = new File(plugin.getDataFolder(), "lang");
+        this.messagesFile = new File(plugin.getDataFolder(), MESSAGES_FILE);
         if (!langDir.exists()) langDir.mkdirs();
+        extractMessages();
         extractBundled();
         loadAll();
     }
 
     public void reload() {
         langs.clear();
+        extractMessages();
         extractBundled();
         loadAll();
     }
@@ -80,7 +86,8 @@ public class LanguageManager {
     }
 
     public String getDefault(String key, Map<String, String> placeholders) {
-        String msg = getFromLang(plugin.getConfigManager().getDefaultLanguage(), key);
+        String msg = getFromMessages(key);
+        if (msg == null) msg = getFromLang(plugin.getConfigManager().getDefaultLanguage(), key);
         if (msg == null) msg = getFromLang("en", key);
         if (msg == null) msg = "<red>[Auth] Missing key: " + key;
         if (placeholders != null) {
@@ -92,6 +99,9 @@ public class LanguageManager {
     // ─── Internals ────────────────────────────────────────────────────────────
 
     private String resolve(Player player, String key) {
+        String configured = getFromMessages(key);
+        if (configured != null) return configured;
+
         // Try player locale
         String mcLocale = player.locale().getLanguage() + "_" + player.locale().getCountry();
         String langCode = LOCALE_MAP.getOrDefault(mcLocale.toLowerCase(),
@@ -102,6 +112,12 @@ public class LanguageManager {
         if (msg == null)       msg = getFromLang(plugin.getConfigManager().getDefaultLanguage(), key);
         if (msg == null)       msg = getFromLang("en", key);
         return msg;
+    }
+
+    private String getFromMessages(String key) {
+        String configured = messages != null ? messages.getString(key) : null;
+        if (configured != null) return configured;
+        return bundledMessages != null ? bundledMessages.getString(key) : null;
     }
 
     private String getFromLang(String code, String key) {
@@ -123,6 +139,28 @@ public class LanguageManager {
                     plugin.getLogger().log(Level.WARNING, "Could not extract lang/" + lang + ".yml", e);
                 }
             }
+        }
+    }
+
+    private void extractMessages() {
+        if (!messagesFile.exists()) {
+            plugin.saveResource(MESSAGES_FILE, false);
+        }
+        try (InputStream is = plugin.getResource(MESSAGES_FILE)) {
+            if (is != null) {
+                try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    bundledMessages = YamlConfiguration.loadConfiguration(reader);
+                }
+            }
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to load bundled " + MESSAGES_FILE, e);
+            bundledMessages = new YamlConfiguration();
+        }
+        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(messagesFile), StandardCharsets.UTF_8)) {
+            messages = YamlConfiguration.loadConfiguration(reader);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to load " + MESSAGES_FILE, e);
+            messages = new YamlConfiguration();
         }
     }
 

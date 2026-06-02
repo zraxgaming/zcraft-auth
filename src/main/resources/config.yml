@@ -3,6 +3,7 @@ config-version: 2
 
 general:
   prefix: "[Auth] "
+  # Edit all chat, title, bossbar, kick, and admin text in messages.yml.
 
   # Seconds before unauthenticated players are kicked.
   # 0 disables the kick.

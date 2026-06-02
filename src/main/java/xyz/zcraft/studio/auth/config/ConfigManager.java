@@ -37,13 +37,16 @@ public class ConfigManager {
     public double getLimboX()                { return cfg.getDouble("location.x", cfg.getDouble("general.limbo-spawn.x", 0)); }
     public double getLimboY()                { return cfg.getDouble("location.y", cfg.getDouble("general.limbo-spawn.y", 64)); }
     public double getLimboZ()                { return cfg.getDouble("location.z", cfg.getDouble("general.limbo-spawn.z", 0)); }
-    public float  getLimboYaw()              { return (float) cfg.getDouble("general.limbo-spawn.yaw", 0); }
-    public float  getLimboPitch()            { return (float) cfg.getDouble("general.limbo-spawn.pitch", 0); }
+    public float  getLimboYaw()              { return (float) cfg.getDouble("location.yaw", cfg.getDouble("general.limbo-spawn.yaw", 0)); }
+    public float  getLimboPitch()            { return (float) cfg.getDouble("location.pitch", cfg.getDouble("general.limbo-spawn.pitch", 0)); }
     public boolean isTeleportToLastLocation(){ return cfg.getBoolean("general.teleport-to-last-location", true); }
     public boolean isHideInTablist()         { return cfg.getBoolean("general.hide-in-tablist", false); }
     public boolean isInvisibleBeforeAuth()   { return cfg.getBoolean("general.invisible-before-auth", false); }
     public boolean isAllowChatBeforeAuth()   { return cfg.getBoolean("general.allow-chat-before-auth", false); }
-    public List<String> getAllowedCommands()  { return cfg.getStringList("general.allowed-commands-before-auth"); }
+    public List<String> getAllowedCommands()  {
+        List<String> configured = cfg.getStringList("general.allowed-commands-before-auth");
+        return configured.isEmpty() ? List.of("/login", "/register", "/l", "/reg", "/2fa") : configured;
+    }
 
     // â”€â”€â”€ Feature toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -196,9 +199,9 @@ public class ConfigManager {
     // ─── GUI ──────────────────────────────────────────────────────────────────
 
     public boolean isPreJoinDialogEnabled()  { return isGuiFeatureEnabled() && cfg.getBoolean("gui.pre-join-dialog", true); }
-    public boolean isBossBarEnabled()        { return isGuiFeatureEnabled() && cfg.getBoolean("gui.bossbar-prompt", true); }
+    public boolean isBossBarEnabled()        { return isGuiFeatureEnabled() && cfg.getBoolean("prompts.bossbar", cfg.getBoolean("gui.bossbar-prompt", true)); }
     public String getBossBarColor()          { return cfg.getString("gui.bossbar-color", "BLUE"); }
-    public boolean isActionBarHintEnabled()  { return isGuiFeatureEnabled() && cfg.getBoolean("gui.actionbar-hint", true); }
+    public boolean isActionBarHintEnabled()  { return isGuiFeatureEnabled() && cfg.getBoolean("prompts.actionbar-fallback", cfg.getBoolean("gui.actionbar-hint", true)); }
     public boolean isTitlePromptEnabled()    { return isGuiFeatureEnabled() && cfg.getBoolean("gui.title-prompt", true); }
 
     // ─── Compat ───────────────────────────────────────────────────────────────

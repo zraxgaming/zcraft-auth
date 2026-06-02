@@ -57,7 +57,7 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                                 sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
                                         .getDefault("admin.backup-success", Map.of("file", new File(path).getName()))));
                             } else {
-                                sender.sendMessage(mm.deserialize("<red>Backup failed. Check the console."));
+                                sender.sendMessage(mm.deserialize(plugin.getLanguageManager().getDefault("admin.backup-failed")));
                             }
                         })
                 );
@@ -71,7 +71,8 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                     int count = new AccountImporter(plugin).importFrom(source, path);
                     plugin.runSync(() ->
-                            sender.sendMessage(mm.deserialize("<green>Import complete: " + count + " accounts."))
+                            sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                    .getDefault("admin.import-complete", Map.of("count", String.valueOf(count)))))
                     );
                 });
             }
@@ -86,7 +87,8 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                 plugin.getDatabase().findByUsername(name).thenAccept(opt ->
                         plugin.runSync(() -> {
                             if (opt.isEmpty()) {
-                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .getDefault("admin.no-account", Map.of("player", name))));
                                 return;
                             }
                             plugin.getDatabase().deletePlayer(opt.get().uuid()).thenRun(() ->
@@ -95,7 +97,7 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                                                 .getDefault("admin.unregistered", Map.of("player", name))));
                                         Player online = plugin.getServer().getPlayerExact(name);
                                         if (online != null && online.isOnline()) {
-                                            online.kick(mm.deserialize("<red>Your account was deleted by an administrator."));
+                                            online.kick(mm.deserialize(plugin.getLanguageManager().getDefault("admin.account-deleted-kick")));
                                         }
                                         plugin.getDiscordLogger().logAdminAction(
                                                 sender.getName(), "UNREGISTER", name, "Account deleted");
@@ -120,14 +122,16 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                     if (online != null && online.getAddress() != null) {
                         lockIp = online.getAddress().getAddress().getHostAddress();
                     } else {
-                        sender.sendMessage(mm.deserialize("<red>Specify an IP: /" + label + " restrict <player> <ip>"));
+                        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                .getDefault("admin.specify-ip", Map.of("label", label))));
                         return true;
                     }
                 }
                 plugin.getDatabase().findByUsername(name).thenAccept(opt ->
                         plugin.runSync(() -> {
                             if (opt.isEmpty()) {
-                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .getDefault("admin.no-account", Map.of("player", name))));
                                 return;
                             }
                             plugin.getDatabase().updatePlayer(
@@ -153,7 +157,8 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                 plugin.getDatabase().findByUsername(name).thenAccept(opt ->
                         plugin.runSync(() -> {
                             if (opt.isEmpty()) {
-                                sender.sendMessage(mm.deserialize("<red>No account: " + name));
+                                sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                                        .getDefault("admin.no-account", Map.of("player", name))));
                                 return;
                             }
                             plugin.getDatabase().updatePlayer(
@@ -169,19 +174,18 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
                 );
             }
 
-            case "accounts" -> sender.sendMessage(mm.deserialize(
-                    "<aqua><bold>Auth Stats</bold></aqua>\n" +
-                            "<gray>Online Players : </gray><white>" + plugin.getServer().getOnlinePlayers().size() + "\n" +
-                            "<gray>DB Provider    : </gray><white>" + plugin.getDatabase().getProviderType() + "\n" +
-                            "<gray>Table          : </gray><white>" + plugin.getDatabase().getTableName() + "\n" +
-                            "<gray>AntiBot Active : </gray><white>" + plugin.getAntiBotManager().isActive()
-            ));
+            case "accounts" -> sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                    .getDefault("admin.accounts", Map.of(
+                            "online", String.valueOf(plugin.getServer().getOnlinePlayers().size()),
+                            "database", plugin.getDatabase().getProviderType(),
+                            "table", plugin.getDatabase().getTableName(),
+                            "antibot", String.valueOf(plugin.getAntiBotManager().isActive())
+                    ))));
 
-            case "antibot" -> sender.sendMessage(mm.deserialize(
-                    "<yellow>AntiBot is <white>"
-                            + (plugin.getAntiBotManager().isActive() ? "<green>ACTIVE" : "<red>INACTIVE") + "\n"
-                            + "<yellow>Adjust thresholds in <white>config.yml -> antibot</white>."
-            ));
+            case "antibot" -> sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                    .getDefault("admin.antibot-status", Map.of(
+                            "status", plugin.getAntiBotManager().isActive() ? "ACTIVE" : "INACTIVE"
+                    ))));
 
             default -> sendHelp(sender, label);
         }
@@ -189,17 +193,8 @@ public class AuthAdminCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(mm.deserialize(
-                "<dark_gray>[<gradient:#00B4FF:#0077FF>Auth</gradient>]</dark_gray> <gray>Admin Commands\n" +
-                        "<aqua>/" + label + " reload</aqua>               <dark_gray>-</dark_gray> <gray>Reload config and languages\n" +
-                        "<aqua>/" + label + " backup</aqua>               <dark_gray>-</dark_gray> <gray>Manual DB backup\n" +
-                        "<aqua>/" + label + " import</aqua>               <dark_gray>-</dark_gray> <gray>Import accounts\n" +
-                        "<aqua>/" + label + " unregister <player></aqua>  <dark_gray>-</dark_gray> <gray>Delete account\n" +
-                        "<aqua>/" + label + " restrict <player> [ip]</aqua> <dark_gray>-</dark_gray> <gray>Lock to IP\n" +
-                        "<aqua>/" + label + " unrestrict <player></aqua>  <dark_gray>-</dark_gray> <gray>Remove IP lock\n" +
-                        "<aqua>/" + label + " accounts</aqua>             <dark_gray>-</dark_gray> <gray>Show stats\n" +
-                        "<aqua>/" + label + " antibot</aqua>              <dark_gray>-</dark_gray> <gray>AntiBot status"
-        ));
+        sender.sendMessage(mm.deserialize(plugin.getLanguageManager()
+                .getDefault("admin.help", Map.of("label", label))));
     }
 
     @Override
