@@ -1,10 +1,8 @@
-name: ZCraftAuth
+name: Auth
 version: '1.0.0'
 main: xyz.zcraft.studio.auth.ZCraftAuth
 api-version: '1.21'
-description: Premium authentication plugin by ZCraft Studios — studio.z-craft.xyz
-authors: [ZCraftStudios]
-website: https://studio.z-craft.xyz
+description: "Minecraft authentication plugin. Original Author: ZCraft Studios."
 softdepend: [PacketEvents, Citizens, CombatTag, CombatTagPlus]
 
 commands:
@@ -20,10 +18,10 @@ commands:
     description: Log out of your account
     usage: /logout
     aliases: [lo]
-  changepassword:
+  changepass:
     description: Change your account password
-    usage: /changepassword <oldPassword> <newPassword>
-    aliases: [cp, changepw, passwd]
+    usage: /changepass <oldPassword> <newPassword>
+    aliases: [changepassword, cp, changepw, passwd]
   email:
     description: Manage your email address
     usage: /email <add|change|verify|recover> [args]
@@ -36,10 +34,10 @@ commands:
     description: Force-login a player (console/admin only)
     usage: /forcelogin <player>
     aliases: [flogin, adminlogin]
-  zcraftauth:
-    description: ZCraft Studios Auth admin command
-    usage: /zcraftauth <reload|import|backup|accounts|restrict|unrestrict|unregister>
-    aliases: [zauth, authadmin]
+  zauth:
+    description: Admin command
+    usage: /zauth <reload|import|backup|accounts|restrict|unrestrict|unregister>
+    aliases: [authadmin]
 
 permissions:
   zcraftauth.login:
@@ -52,7 +50,7 @@ permissions:
     description: Allows the player to use /logout
     default: true
   zcraftauth.changepassword:
-    description: Allows the player to use /changepassword
+    description: Allows the player to use /changepass
     default: true
   zcraftauth.email:
     description: Allows the player to use /email
@@ -64,7 +62,7 @@ permissions:
     description: Allows use of /forcelogin
     default: op
   zcraftauth.admin:
-    description: Full admin access to ZCraftAuth
+    description: Full admin access to the auth plugin
     default: op
   zcraftauth.bypass.antibot:
     description: Bypass antibot restrictions

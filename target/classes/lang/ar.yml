@@ -1,11 +1,13 @@
 # ─────────────────────────────────────────────
-# ZCraft Studios Auth — Arabic (ar)
+# Auth — Arabic (ar)
 # ─────────────────────────────────────────────
 
 not-authenticated: "<red>يجب عليك تسجيل الدخول أولاً! استخدم <yellow>/login <كلمة_المرور></yellow>."
 not-registered: "<red>أنت غير مسجل. استخدم <yellow>/register <كلمة_المرور> <تأكيد></yellow>."
 already-authenticated: "<green>أنت مسجل الدخول بالفعل."
 already-registered: "<red>اسم المستخدم هذا مسجل بالفعل."
+feature:
+  disabled: "<red>هذه الميزة معطلة على هذا السيرفر."
 
 login:
   prompt: "<aqua>يرجى تسجيل الدخول باستخدام <yellow>/login <كلمة_المرور></yellow>."
@@ -32,7 +34,7 @@ changepassword:
   success: "<green>✔ تم تغيير كلمة المرور بنجاح."
   wrong-old: "<red>✗ كلمة المرور الحالية غير صحيحة."
   same-as-old: "<red>✗ لا يمكن أن تكون كلمة المرور الجديدة مطابقة للقديمة."
-  prompt: "<aqua>استخدم <yellow>/changepassword <القديمة> <الجديدة></yellow>."
+  prompt: "<aqua>استخدم <yellow>/changepass <القديمة> <الجديدة></yellow>."
 
 email:
   prompt-add: "<aqua>أضف بريدك الإلكتروني باستخدام <yellow>/email add <البريد></yellow>."
@@ -74,7 +76,7 @@ forcelogin:
   console-only: "<red>✗ يمكن استخدام هذا الأمر فقط من وحدة التحكم أو من قبل المديرين."
 
 admin:
-  reload-success: "<green>✔ تم إعادة تحميل ZCraft Studios Auth."
+  reload-success: "<green>تم إعادة تحميل Auth."
   backup-started: "<green>✔ بدأ النسخ الاحتياطي."
   backup-success: "<green>✔ تم حفظ النسخة الاحتياطية في <yellow>{file}</yellow>."
   import-started: "<green>✔ بدأ الاستيراد من {source}. تحقق من السجل للتفاصيل."

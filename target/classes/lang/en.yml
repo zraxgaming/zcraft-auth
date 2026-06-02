@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────
-# ZCraft Studios Auth — English (en)
+# Auth — English (en)
 # ─────────────────────────────────────────────
 
 # MiniMessage format supported in all messages
@@ -9,6 +9,8 @@ not-authenticated: "<red>You must log in first! Use <yellow>/login <password></y
 not-registered: "<red>You are not registered. Use <yellow>/register <password> <confirmPassword></yellow>."
 already-authenticated: "<green>You are already authenticated."
 already-registered: "<red>This username is already registered."
+feature:
+  disabled: "<red>This feature is disabled on this server."
 
 login:
   prompt: "<aqua>Please log in with <yellow>/login <password></yellow>."
@@ -35,7 +37,7 @@ changepassword:
   success: "<green>✔ Password changed successfully."
   wrong-old: "<red>✗ Incorrect current password."
   same-as-old: "<red>✗ New password cannot be the same as the old one."
-  prompt: "<aqua>Use <yellow>/changepassword <oldPassword> <newPassword></yellow>."
+  prompt: "<aqua>Use <yellow>/changepass <oldPassword> <newPassword></yellow>."
 
 email:
   prompt-add: "<aqua>Add an email with <yellow>/email add <address></yellow>."
@@ -77,7 +79,7 @@ forcelogin:
   console-only: "<red>✗ This command can only be used from console or by admins."
 
 admin:
-  reload-success: "<green>✔ ZCraft Studios Auth reloaded."
+  reload-success: "<green>Auth reloaded."
   backup-started: "<green>✔ Database backup started."
   backup-success: "<green>✔ Backup saved to <yellow>{file}</yellow>."
   import-started: "<green>✔ Import from {source} started. Check console for progress."
